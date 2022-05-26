@@ -10,4 +10,20 @@ column, given the values in all the other columns.
 The list of tools used in training the ML model is specified in ./config/input_files.csv.
 This file contains 2 columns: 'input_file', and 'label'. 'input_file' is the full path to 
 tool's recorded CSV file. 'label' is the column in the CSV file we are trying to predict (
-in case of runtime prediction, it's going to be 'runtime').
+in case of runtime prediction, it's going to be 'runtime'). We can specify as many CSV files 
+as we want in the ./config/input_files.csv file -- they will all be used in training the ML 
+model.
+
+We also want to train different ML models on the same set of tool CSV files, as some models 
+may perform better than the others. We specify the list of models we want to train in 
+./config/models.json. The keys in this json file are ML model names (e.g., RandomForestRegressor).
+The values are attributes for the Ml model, e.g., module name (loaded automatically by the 
+./scripts/regression.py), class name (instantiated automatically by the ./scripts/regression.py), 
+and model parameters. We can specify as many parameters as we want (E.g., for RandomForestRegressor 
+in ./config/models.json 3 parameters are specified), and specify as many values as we want for each 
+parameter, and scikit-learn's GridSearchCV (used by ./scripts/regression.py) will train the model
+using all the combination of all the parameters and report the best combination to us. E.g., for 
+RandomForestRegressor, we have specified 3 parameters (n_estimators, max_depth, and max_features), 
+and for each parameter we have specified 2 values. Hence, the model is trained using 2 X 2 X 2 = 8 
+parametger values and the best model amonst those 8 would be reported. 
+
