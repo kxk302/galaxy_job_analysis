@@ -1,6 +1,8 @@
 import argparse
 import importlib
 import json
+import os
+import pickle
 
 import numpy as np 
 import pandas as pd
@@ -172,7 +174,7 @@ def get_preprocessor(categorical_features, numerical_features):
 #
 # o_file:
 #  File pointer to write the output
-def process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file):
+def process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir):
   for model_name in models:
     print(f'model_name: {model_name}')
     module_name = models[model_name]["module_name"]
@@ -213,6 +215,11 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
     print(f'prediction_score: {prediction_score}')
     o_file.write(",".join([input_file, model_name, label_name, str(grid_search_cv.best_score_), best_params_str, str(prediction_score)])+'\n')
 
+    # Save model to file
+    model_file_name =  os.path.join(models_dir, os.path.basename(input_file) + '_' + model_name)
+    with open(model_file_name, 'wb') as fp:
+      pickle.dump(grid_search_cv.best_estimator_, fp)
+
 
 # input_files:
 #  Each line in this file specifies the training data file name and the column to be predicted
@@ -228,7 +235,7 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
 #
 #   input_file,regressor,label_name,best_score(r2),best_parameters,test_score(r2)
 #
-def predict(inputs_file, models_file, output_file):
+def predict(inputs_file, models_file, output_file, models_dir):
   print(f'inputs_file: {inputs_file}')
   df_in = pd.read_csv(inputs_file)
   print(df_in.head())
@@ -280,7 +287,7 @@ def predict(inputs_file, models_file, output_file):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
     
     # Iterate over each model in models file
-    process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file)
+    process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir)
 
   o_file.close()
 
@@ -290,5 +297,6 @@ if __name__ == '__main__':
   argument_parser.add_argument('--input_files', '-i', type=str, required=True)
   argument_parser.add_argument('--models', '-m', type=str, required=True)
   argument_parser.add_argument('--output_file', '-o', type=str, required=True)
+  argument_parser.add_argument('--models_dir', '-d', type=str, required=True)
   args = argument_parser.parse_args()
-  predict(args.input_files, args.models, args.output_file)
+  predict(args.input_files, args.models, args.output_file, args.models_dir)
