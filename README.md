@@ -42,5 +42,5 @@ To train the models specified in ./config/models.json on the training data speci
 ./config/input_files.csv, run the following command:
 
 ```
-python3 ./scripts/regression.py --input_files ./config/input_files.csv --models ./config/models.json --output_file ./output_files/output.csv 
+python3 ./scripts/regression.py -i ./config/input_files.csv -m ./config/models.json -o ./output_files/output.csv 
 ```
