@@ -1,0 +1,38 @@
+{
+  "RandomForestRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "RandomForestRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        50,
+        120
+      ],
+      "model__max_depth": [
+        10,
+        15
+      ],
+      "model__max_features": [
+        "auto",
+        "sqrt"
+      ]
+    }
+  },
+  "ExtraTreesRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "ExtraTreesRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        60,
+        110
+      ],
+      "model__max_depth": [
+        12,
+        17
+      ],
+      "model__max_features": [
+        "auto",
+        "log2"
+      ]
+    }
+  }
+}
