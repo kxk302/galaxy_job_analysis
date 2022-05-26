@@ -44,3 +44,7 @@ To train the models specified in ./config/models.json on the training data speci
 ```
 python3 ./scripts/regression.py -i ./config/input_files.csv -m ./config/models.json -o ./output_files/output.csv 
 ```
+
+The script trains each model specified in ./config/models.json, for all parameter combinations, 
+and prints the best parameter combination along with the prediction score on training/test dataset.   
+This information is also saved to an output file (./output_files/output.csv).
