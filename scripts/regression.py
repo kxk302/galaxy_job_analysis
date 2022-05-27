@@ -48,7 +48,7 @@ NUM_CATEGORIES_CUTOFF = 100
 RUNTIME = 'runtime'
 
 
-def remove_bad_columns(df_in):
+def remove_bad_columns(df_in, label_name):
   df = df_in.copy()
 
   # Get a list of all user selected parameters
@@ -112,7 +112,7 @@ def remove_bad_columns(df_in):
     except:
       pass
 
-  hardware=[RUNTIME]
+  hardware=[label_name]
 
   keep = parameters + filetypes + files + hardware
 
@@ -255,7 +255,7 @@ def predict(inputs_file, models_file, output_file, models_dir):
     print(f'input_file: {input_file}, label_name: {label_name}')
     df = pd.read_csv(input_file)
 
-    df = remove_bad_columns(df)
+    df = remove_bad_columns(df, label_name)
 
     X = df.drop(columns=[label_name], axis=1)
     y = df[label_name] 
