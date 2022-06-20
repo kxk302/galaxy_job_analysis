@@ -5,8 +5,6 @@ import pickle
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import r2_score
-from sklearn.model_selection import train_test_split
 
 
 # input_file:
@@ -34,11 +32,9 @@ def predict_with_loaded_model(input_file, label_name, model_file):
   # normalize runtimes
   y = np.log1p(y)
 
-  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=regression.TEST_SIZE, random_state=regression.RANDOM_STATE)
-
-  y_predicted = loaded_model.predict(X_test)
-  prediction_score = r2_score(y_test, y_predicted)
-  print(f'prediction_score: {prediction_score}')
+  y_predicted = loaded_model.predict(X)
+  print(f'Actual value: {y.values}')
+  print(f'Predicted value: {y_predicted}')
 
 
 if __name__ == '__main__':

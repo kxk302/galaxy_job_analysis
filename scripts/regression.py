@@ -35,7 +35,8 @@ IGNORE_FILETYPE = 'chromInfo_filetype'
 # List of the begining of bad parameters
 BAD_STARTS=['__workflow_invocation_uuid__', 'chromInfo', '__job_resource',
             'reference_source', 'reference_genome', 'rg',
-            'readGroup', 'refGenomeSource', 'genomeSource']
+            'readGroup', 'refGenomeSource', 'genomeSource',
+            'dbkey']
 # List of the ending of bad parameters
 BAD_ENDS = ['id', 'identifier', '__identifier__', 'indeces']
 # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
@@ -48,6 +49,7 @@ NUM_CATEGORIES_CUTOFF = 100
 
 def remove_bad_columns(df_in, label_name):
   df = df_in.copy()
+  num_rows = df.shape[0]
 
   # Get a list of all user selected parameters
   parameters = [col for col in df.columns.tolist()]
@@ -77,17 +79,21 @@ def remove_bad_columns(df_in, label_name):
       except:
         df[parameter]=df[parameter].str[1:-1]
 
-    # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
-    if df[parameter].dtype==object and len(df[parameter].unique()) >= UNIQUE_CUTOFF*df.shape[0]:
-      bad_parameters.append(parameter)
+    # The following checks are performed on training dataset -- that contains many rows
+    # When making prediction, we only have one row, can can skip such set wise filtering
+    if num_rows != 1:
 
-    # If more than NULL_CUTOFF of the rows are null, remove the feature
-    if df[parameter].isnull().sum() >= NULL_CUTOFF*df.shape[0]:
-      bad_parameters.append(parameter)
+      # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
+      if df[parameter].dtype==object and len(df[parameter].unique()) >= UNIQUE_CUTOFF*df.shape[0]:
+        bad_parameters.append(parameter)
 
-    # If the number of categories is greater than NUM_CATEGORIES_CUTOFF remove
-    if df[parameter].dtype == object and len(df[parameter].unique()) >= NUM_CATEGORIES_CUTOFF:
-      bad_parameters.append(parameter)
+      # If more than NULL_CUTOFF of the rows are null, remove the feature
+      if df[parameter].isnull().sum() >= NULL_CUTOFF*df.shape[0]:
+        bad_parameters.append(parameter)
+
+      # If the number of categories is greater than NUM_CATEGORIES_CUTOFF remove
+      if df[parameter].dtype == object and len(df[parameter].unique()) >= NUM_CATEGORIES_CUTOFF:
+        bad_parameters.append(parameter)
 
     # If the feature is a list remove
     if all(type(item)==str and item.startswith("[") and item.endswith("]") for item in series):
