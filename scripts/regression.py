@@ -35,8 +35,7 @@ IGNORE_FILETYPE = 'chromInfo_filetype'
 # List of the begining of bad parameters
 BAD_STARTS=['__workflow_invocation_uuid__', 'chromInfo', '__job_resource',
             'reference_source', 'reference_genome', 'rg',
-            'readGroup', 'refGenomeSource', 'genomeSource',
-            'dbkey']
+            'readGroup', 'refGenomeSource', 'genomeSource']
 # List of the ending of bad parameters
 BAD_ENDS = ['id', 'identifier', '__identifier__', 'indeces']
 # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature

@@ -1,0 +1,1 @@
+{"memory.max_usage_in_bytes": [27510259712], "own_file": [2727258552], "input_1": [6037360963], "input_2": [6037360963], "own_file_extension": ["fasta"], "input_1_extension": ["fastqsanger"], "input_2_extension": ["fastqsanger"], "dbkey": ["mm10"], "save_mapping_stats": ["False"], "analysis_type_selector": ["simple"], "sam_options_selector": ["none"]}

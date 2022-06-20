@@ -1,6 +1,7 @@
 import regression
 
 import argparse
+import json
 import pickle
 
 import numpy as np
@@ -18,7 +19,9 @@ import pandas as pd
 #
 def predict_with_loaded_model(input_file, label_name, model_file):
   print(f'input_file: {input_file}')
-  df_in = pd.read_csv(input_file)
+  with open(input_file, 'r') as fp:
+    input_dict = json.load(fp)
+  df_in = pd.DataFrame(input_dict)
 
   print(f'model_file: {model_file}')
   with open(model_file, 'rb') as fp:
