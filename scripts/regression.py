@@ -33,9 +33,9 @@ FILETYPE = '_filetype'
 # Ignore this file type when selecting file type columns
 IGNORE_FILETYPE = 'chromInfo_filetype'
 # List of the begining of bad parameters
-BAD_STARTS=['parameters.__workflow_invocation_uuid__', 'parameters.chromInfo', 'parameters.__job_resource',
-            'parameters.reference_source', 'parameters.reference_genome', 'parameters.rg',
-            'parameters.readGroup', 'parameters.refGenomeSource', 'parameters.genomeSource']
+BAD_STARTS=['__workflow_invocation_uuid__', 'chromInfo', '__job_resource',
+            'reference_source', 'reference_genome', 'rg',
+            'readGroup', 'refGenomeSource', 'genomeSource']
 # List of the ending of bad parameters
 BAD_ENDS = ['id', 'identifier', '__identifier__', 'indeces']
 # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
@@ -44,15 +44,13 @@ UNIQUE_CUTOFF = 0.5
 NULL_CUTOFF = 0.75
 # If the number of unique values exceeds NUM_CATEGORIES_CUTOFF, remove the categorical feature
 NUM_CATEGORIES_CUTOFF = 100
-# Column to predict
-RUNTIME = 'runtime'
 
 
 def remove_bad_columns(df_in, label_name):
   df = df_in.copy()
 
   # Get a list of all user selected parameters
-  parameters = [col for col in df.columns.tolist() if col.startswith(PARAMETERS)]
+  parameters = [col for col in df.columns.tolist()]
 
   # Get names of file types and files
   filetypes=[col for col in df.columns.tolist() if (col.endswith(FILETYPE) and col != IGNORE_FILETYPE)]
@@ -174,6 +172,10 @@ def get_preprocessor(categorical_features, numerical_features):
 #
 # o_file:
 #  File pointer to write the output
+#
+# models_dir:
+#   Models directory
+#
 def process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir):
   for model_name in models:
     print(f'model_name: {model_name}')
