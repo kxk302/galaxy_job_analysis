@@ -46,7 +46,7 @@ NULL_CUTOFF = 0.75
 NUM_CATEGORIES_CUTOFF = 100
 
 
-def remove_bad_columns(df_in, label_name):
+def remove_bad_columns(df_in, label_name = None):
   df = df_in.copy()
   num_rows = df.shape[0]
 
@@ -115,7 +115,9 @@ def remove_bad_columns(df_in, label_name):
     except:
       pass
 
-  hardware=[label_name]
+  hardware = []
+  if label_name is not None:
+    hardware=[label_name]
 
   keep = parameters + filetypes + files + hardware
 
