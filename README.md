@@ -50,3 +50,18 @@ and prints the best parameter combination along with the prediction score on tra
 This information is also saved to an output file (./output_files/output.csv). The model binaries are
 saved to ./models folder and can be loaded, e.g. by a REST service to provice endpoints for memory
 prediction.
+
+### Serve ML model for Memory Prediction via FastAPI
+
+FastAPI is defined in ./app/main.py. To start the FastAPI, run the following command:
+
+```
+uvicorn main:app --reload
+```
+
+FastAPI will load the binaries for the best trained model for each tool, located in the ./models folder, in its
+startup_event() method. Memory prediction endpoints can be accessed via http://127.0.0.1:8000/docs. For example,
+expand /bowtie2/memory/ documentation, specify values for own_file, input_1, and input_2 -- You can use the values
+in the first training example in ./examples/bowtie2.csv (own_file: 2102960, input_1: 1493950957, input_2: 0). The
+predicted value retunred by the endpoint should be close to the value of memory.max_usage_in_bytes column
+(2886856704). The endpoint returned the value of 3661949266 (predicted 3.6GB where 2.8GB was expected).

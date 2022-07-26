@@ -3,8 +3,9 @@ from fastapi import FastAPI, APIRouter
 import os
 import pickle
 import sys
-# adding scripts folder to the system path
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'scripts'))
+# Adding scripts folder to the system path
+# Must go one level up in directory to access 'scripts' folder
+sys.path.append(os.path.join(os.path.abspath(os.path.join(sys.path[0], os.pardir)), 'scripts'))
 import regression
 
 import numpy as np
@@ -18,7 +19,7 @@ models = {}
 
 @app.on_event('startup')
 async def startup_event():
-    with open('./models/bowtie2.csv_RandomForestRegressor', 'rb') as fp:
+    with open('../models/bowtie2.csv_RandomForestRegressor', 'rb') as fp:
       models['bowtie2'] = pickle.load(fp)
 
 
@@ -69,5 +70,5 @@ app.include_router(api_router)
 if __name__ == '__main__':
     # Use this for debugging purposes only
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8008, log_level='debug')
+    uvicorn.run(app, host='127.0.0.1', port=8000, log_level='debug')
 
