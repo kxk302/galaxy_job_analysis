@@ -1,5 +1,6 @@
 import argparse
 
+import numpy as np
 import pandas as pd
 
 
@@ -12,19 +13,19 @@ def get_datasets_fields(df):
   #      488826  param_name  output
   #      488826        type  output
   #      ...     ...         ...
+  metrics = ['extension', 'file_size', 'param_name', 'type']
+  num_of_metrics = len(['extension', 'file_size', 'param_name', 'type'])
+
   df_melt = pd.melt(df,
                     id_vars=['dataset_id'],
-                    value_vars=['extension',
-                                'file_size',
-                                'param_name',
-                                'type',
-                                'file_size']).sort_values(by=['dataset_id'])
-  # Assign a number to each group formed by groupby. This number will be
-  # appeneded to metric name to distinguish different metrics of the same
-  # type, e.g., input_file_1, input_file_2, input_file_3, etc.
-  groupby_keys = list(df_melt.groupby('dataset_id').groups.keys())
-  groupby_keys = list(enumerate(groupby_keys))
-  df_melt['idx'] = df_melt['dataset_id'].apply(get_groupby_idx, args=[groupby_keys])
+                    value_vars=metrics).sort_values(by=['variable', 'dataset_id'])
+
+  num_of_rows = df_melt.shape[0]
+  num_of_indexes = num_of_rows / num_of_metrics
+  # E.g., if 12 rows in df_melt, and we have 4 metrics, must append 1 to first group
+  # of metrics, 2 to second group of metrics, and 3 to third group of metrics
+  idx_list = num_of_metrics * np.arange(1, num_of_indexes+1).tolist()
+  df_melt['idx'] = idx_list
   df_melt['variable_idx'] = df_melt['variable'] + '_' + df_melt['idx'].astype(str)
   # variable_idx is all we need. Dropping variable and idx fields
   df_melt.drop(['variable', 'idx'], inplace=True, axis=1)
@@ -47,13 +48,7 @@ def get_datasets_fields(df):
   return df_t
 
 
-def get_groupby_idx(dataset_id_in, groupby_keys):
-  for (idx, dataset_id) in groupby_keys:
-    if dataset_id == dataset_id_in:
-      return idx
-
-
-def generate_input_files(jobs_file, datasets_file, numeric_metrics_file):
+def read_input_files(jobs_file, datasets_file, numeric_metrics_file):
   print('\n')
   print(f'jobs_file: {jobs_file}')
   print(f'datasets_file: {datasets_file}')
@@ -76,35 +71,86 @@ def generate_input_files(jobs_file, datasets_file, numeric_metrics_file):
   print(numeric_metrics_df.head())
   print('\n')
 
+  return jobs_df, datasets_df, numeric_metrics_df
+
+
+def generate_input_files(jobs_file, datasets_file, numeric_metrics_file):
+  jobs_df, datasets_df, numeric_metrics_df = read_input_files(jobs_file, datasets_file, numeric_metrics_file)
+
+  # We only care about jobs with 'ok' state
+  print('jobs_df.shape')
+  print(jobs_df.shape)
+  print('\n')
+  jobs_df = jobs_df[ jobs_df['state'] == 'ok']
+  print('jobs_df.shape with "ok" state')
+  print(jobs_df.shape)
+  print('\n')
+
   # Pivot numeric metrics, so we have one row per job ID
   numeric_metrics_df_piv = numeric_metrics_df[['job_id', 'name', 'value']].pivot('job_id', 'name', 'value')
   print('Pivoted numeric metrics')
   print(numeric_metrics_df_piv.head())
   print('\n')
 
-  # Do inner join between jobs and pivoted numeric metrics
-  jobs_metrics_df = pd.merge(jobs_df, numeric_metrics_df_piv, left_on='id', right_on='job_id', how='inner')
+  # Do left join between jobs and pivoted numeric metrics. Left join as some jobs may not have any metrics
+  jobs_metrics_df = pd.merge(jobs_df, numeric_metrics_df_piv, left_on='id', right_on='job_id', how='left')
 
   print('Jobs metrics')
   print(jobs_metrics_df.head())
   print(jobs_metrics_df.columns.to_list())
   print('\n')
 
-  print('jobs_metrics_df[jobs_metrics_df[\'id\'] == 280155]')
-  my_jobs_metrics = jobs_metrics_df[jobs_metrics_df['id'] == 280155]
-  print(my_jobs_metrics)
-  print(my_jobs_metrics.shape)
-  print('\n')
-  my_dataset_fields = get_datasets_fields(datasets_df[datasets_df['job_id'] == 280155])
-  print('dataset_fields for job_id 280155')
-  print(my_dataset_fields)
-  print(my_dataset_fields.shape)
-  print('\n')
+  # Get a list of all tool IDs
+  tools_df = jobs_df[['id', 'tool_id', 'tool_version']].groupby(
+    ['tool_id', 'tool_version']).count().sort_values(
+    by=['id'], ascending=False).reset_index()[['tool_id', 'tool_version']]
 
-  my_job_metrics_datasets = pd.concat([my_jobs_metrics, my_dataset_fields], axis=1)
-  print('jobs_metrics_datasets for job_id 280155')
-  print(my_job_metrics_datasets)
-  print(my_job_metrics_datasets.shape)
+  for index, row in tools_df.iterrows():
+    a_tool_id = row['tool_id']
+    a_tool_version = row['tool_version']
+    print(f'index: {index}, tool_id: {a_tool_id}, tool_version: {a_tool_version}')
+    print('\n')
+
+    # Filter jobs_df based on tool_id and tool_version
+    tool_jobs_df = jobs_df[ (jobs_df['tool_id'] == a_tool_id) & (jobs_df['tool_version'] == a_tool_version) ]
+    # call reset_index so index starts from 0 when iterating over the dataframe
+    tool_jobs_df.reset_index(inplace=True)
+
+    a_tool_all_jobs_df = None
+
+    for index_in, row_in in tool_jobs_df.iterrows():
+      a_job_id = row_in['id']
+      print(f'index_in: {index_in}, job_id: {a_job_id}')
+      print('\n')
+
+      my_dataset_fields = get_datasets_fields(datasets_df[datasets_df['job_id'] == a_job_id])
+
+      my_jobs_metrics_df = jobs_metrics_df[ (jobs_metrics_df['id'] == a_job_id) &
+                                            (jobs_metrics_df['tool_id'] == a_tool_id) &
+                                            (jobs_metrics_df['tool_version'] == a_tool_version) ]
+      my_jobs_metrics_df.reset_index(drop=True, inplace=True)
+
+      a_tool_a_job_df = pd.concat([my_jobs_metrics_df, my_dataset_fields], axis=1)
+      a_tool_a_job_df.set_index('id', inplace=True)
+
+      if a_tool_all_jobs_df is None:
+        a_tool_all_jobs_df = pd.DataFrame(a_tool_a_job_df)
+      else:
+        a_tool_all_jobs_df = pd.concat([a_tool_all_jobs_df, a_tool_a_job_df])
+
+      #
+      # DEBUG
+      #
+      if index_in == 10:
+        break
+
+    a_tool_all_jobs_df.to_csv(a_tool_id + "_" + a_tool_version + ".csv", sep=",", index=False)
+
+    #
+    # DEBUG
+    #
+    if index == 5:
+      break
 
 
 if __name__ == '__main__':
