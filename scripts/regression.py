@@ -35,7 +35,8 @@ IGNORE_FILETYPE = 'chromInfo_filetype'
 # List of the begining of bad parameters
 BAD_STARTS=['__workflow_invocation_uuid__', 'chromInfo', '__job_resource',
             'reference_source', 'reference_genome', 'rg',
-            'readGroup', 'refGenomeSource', 'genomeSource']
+            'readGroup', 'refGenomeSource', 'genomeSource',
+            'tool_version', 'state']
 # List of the ending of bad parameters
 BAD_ENDS = ['id', 'identifier', '__identifier__', 'indeces']
 # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
@@ -44,6 +45,10 @@ UNIQUE_CUTOFF = 0.5
 NULL_CUTOFF = 0.75
 # If the number of unique values exceeds NUM_CATEGORIES_CUTOFF, remove the categorical feature
 NUM_CATEGORIES_CUTOFF = 100
+# Only process rows where state is 'ok'
+OK_STATE = 'ok'
+# Total features importance cuttoff
+FEATURES_IMPORTANCE_CUTOFF = 0.8
 
 
 def remove_bad_columns(df_in, label_name = None):
@@ -51,10 +56,10 @@ def remove_bad_columns(df_in, label_name = None):
   num_rows = df.shape[0]
 
   # Get a list of all user selected parameters
-  parameters = [col for col in df.columns.tolist()]
+  parameters = df.columns.tolist()
 
   # Get names of file types and files
-  filetypes=[col for col in df.columns.tolist() if (col.endswith(FILETYPE) and col != IGNORE_FILETYPE)]
+  filetypes=[col for col in parameters if (col.endswith(FILETYPE) and col != IGNORE_FILETYPE)]
   files=[filetype[:-len(FILETYPE)] for filetype in filetypes]
 
   # Remove parameters that start with BAD_STARTS
@@ -67,7 +72,6 @@ def remove_bad_columns(df_in, label_name = None):
 
   # Populate list of bad parameters
   bad_parameters = []
-
   for parameter in parameters:
     series = df[parameter].dropna()
 
@@ -78,21 +82,17 @@ def remove_bad_columns(df_in, label_name = None):
       except:
         df[parameter]=df[parameter].str[1:-1]
 
-    # The following checks are performed on training dataset -- that contains many rows
-    # When making prediction, we only have one row, can can skip such set wise filtering
-    if num_rows != 1:
+    # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
+    if df[parameter].dtype==object and len(df[parameter].unique()) >= UNIQUE_CUTOFF*df.shape[0]:
+      bad_parameters.append(parameter)
 
-      # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
-      if df[parameter].dtype==object and len(df[parameter].unique()) >= UNIQUE_CUTOFF*df.shape[0]:
-        bad_parameters.append(parameter)
+    # If more than NULL_CUTOFF of the rows are null, remove the feature
+    if df[parameter].isnull().sum() >= NULL_CUTOFF*df.shape[0]:
+      bad_parameters.append(parameter)
 
-      # If more than NULL_CUTOFF of the rows are null, remove the feature
-      if df[parameter].isnull().sum() >= NULL_CUTOFF*df.shape[0]:
-        bad_parameters.append(parameter)
-
-      # If the number of categories is greater than NUM_CATEGORIES_CUTOFF remove
-      if df[parameter].dtype == object and len(df[parameter].unique()) >= NUM_CATEGORIES_CUTOFF:
-        bad_parameters.append(parameter)
+    # If the number of categories is greater than NUM_CATEGORIES_CUTOFF remove
+    if df[parameter].dtype == object and len(df[parameter].unique()) >= NUM_CATEGORIES_CUTOFF:
+      bad_parameters.append(parameter)
 
     # If the feature is a list remove
     if all(type(item)==str and item.startswith("[") and item.endswith("]") for item in series):
@@ -105,9 +105,8 @@ def remove_bad_columns(df_in, label_name = None):
         bad_parameters.append(parameter)
 
   for file in files:
-    bad_parameters.append("parameters."+file)
-    bad_parameters.append("parameters."+file+".values")
-    bad_parameters.append("parameters."+file+"|__identifier__")
+    bad_parameters.append(file+".values")
+    bad_parameters.append(file+"|__identifier__")
 
   for param in set(bad_parameters):
     try:
@@ -115,11 +114,7 @@ def remove_bad_columns(df_in, label_name = None):
     except:
       pass
 
-  hardware = []
-  if label_name is not None:
-    hardware=[label_name]
-
-  keep = parameters + filetypes + files + hardware
+  keep = parameters + filetypes + files + [label_name]
 
   columns = df.columns.tolist()
   for column in columns:
@@ -127,6 +122,66 @@ def remove_bad_columns(df_in, label_name = None):
       del df[column]
 
   return df
+
+
+# Drop all memory related columns, besides possibly the label
+def remove_memory_columns(df_in, label_name = None):
+  df = df_in.copy()
+
+  df_columns = df.columns.tolist()
+  df_memory_columns = [column for column in df_columns if 'memory' in column and column != label_name]
+  if 'memtotal' in df_columns:
+    df_memory_columns.append('memtotal')
+  if 'swaptotal' in df_columns:
+    df_memory_columns.append('swaptotal')
+
+  df = df.drop(df_memory_columns, axis=1)
+  return df
+
+def get_column_translation(df):
+  column_translation = []
+  num_cols_after_translation = 0
+
+  print(f'Number of columns before translation: {df.shape[1]}')
+  print(df.columns.tolist())
+
+  for (columnName, columnData) in df.iteritems():
+    print('Column Name : ', columnName)
+    if df.dtypes[columnName] == 'int64' or df.dtypes[columnName] == 'float64':
+      column_translation.append(str(1))
+      num_cols_after_translation += 1
+    else:
+      column_translation.append(str(columnData.nunique()))
+      num_cols_after_translation += columnData.nunique()
+
+  return column_translation, num_cols_after_translation
+
+
+def get_feature_importance(best_estimator_):
+  if hasattr(best_estimator_, 'feature_importances_'):
+    feature_importances_list = best_estimator_.feature_importances_.tolist()
+    feature_importances = list(enumerate(feature_importances_list))
+    feature_importances = sorted(feature_importances, reverse=True, key=lambda x: x[1])
+
+    fi_df = pd.DataFrame({'feature_index': [k for k,v in feature_importances],
+                            'feature_importance': [v for k,v in feature_importances]})
+    fi_df['feature_importance_cumulative_sum'] = fi_df['feature_importance'].cumsum()
+    print('feature importance df')
+    print(fi_df)
+    fi_df = fi_df[ fi_df['feature_importance_cumulative_sum'] <= FEATURES_IMPORTANCE_CUTOFF]
+    print('feature importance df AFTER cutoff applied')
+    print(fi_df)
+    fi_df['index_importance'] = fi_df['feature_index'].astype(str) + ":" + fi_df['feature_importance'].astype(str)
+    print('feature importance df AFTER composite column')
+    print(fi_df)
+
+    feature_importances = fi_df['index_importance'].tolist()
+    feature_importances = ";".join(feature_importances)
+    print(f'feature_importances: {feature_importances}')
+    return feature_importances
+  else:
+    print(f'{best_estimator_} does not have feature_importances_ property')
+    return None
 
 
 # Given a dataframe as input, returns 2 lists,
@@ -216,13 +271,37 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
     print(f'Best score for {class_name}: {grid_search_cv.best_score_}')
     print(f'Best params for {class_name}: {grid_search_cv.best_params_}')
 
+    # Calculate feature importance
+    feature_importance = get_feature_importance(grid_search_cv.best_estimator_[1])
+
+    # Get number of unique values for each categorical column
+    # So, you can translate the feature vector, before and after
+    # applying the preprocessor (e.g., when going from 44 columns
+    # before preprocessor to 64 columns after preprocessor)
+    # For numerical columns, just state 1
+    # For categorical columns, state the number of unique values
+    column_translation, num_cols_after_translation = get_column_translation(X_train)
+    print('column_translation')
+    print(column_translation)
+
     best_params_list = [str(k) +'='+ str(v) for k,v in grid_search_cv.best_params_.items()]
     best_params_str = ";".join(best_params_list)
     print(f'best_params_str: {best_params_str}')
     y_predicted = grid_search_cv.predict(X_test)
     prediction_score = r2_score(y_test, y_predicted)
     print(f'prediction_score: {prediction_score}')
-    o_file.write(",".join([input_file, model_name, label_name, str(grid_search_cv.best_score_), best_params_str, str(prediction_score)])+'\n')
+    o_file.write(",".join([input_file,
+                           model_name,
+                           label_name,
+                           str(grid_search_cv.scorer_),
+                           str(grid_search_cv.best_score_),
+                           best_params_str,
+                           str(prediction_score),
+                           str(len(grid_search_cv.feature_names_in_.tolist())),
+                           ":".join(grid_search_cv.feature_names_in_.tolist()),
+                           feature_importance,
+                           str(num_cols_after_translation),
+                           ":".join(column_translation)])+'\n')
 
     # Save model to file
     model_file_name =  os.path.join(models_dir, os.path.basename(input_file) + '_' + model_name)
@@ -246,7 +325,7 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
 #
 def predict(inputs_file, models_file, output_file, models_dir):
   print(f'inputs_file: {inputs_file}')
-  df_in = pd.read_csv(inputs_file)
+  df_in = pd.read_csv(inputs_file, comment='#')
   print(df_in.head())
 
   print(f'models_file: {models_file}')
@@ -255,7 +334,7 @@ def predict(inputs_file, models_file, output_file, models_dir):
   print(models)
 
   o_file = open(output_file, 'w')
-  o_file.write('input_file,regressor,label_name,best_score(' + SCORING + '),best_parameters,test_score(' + SCORING + ')\n')
+  o_file.write('input_file,regressor,label_name,scorer_function,best_score,best_parameters,test_score,num_features,feature_names,feature_importance,num_cols_after_translation,column_translation\n')
 
   # Iterate over each file in input_files
   for index, row in df_in.iterrows():
@@ -264,7 +343,21 @@ def predict(inputs_file, models_file, output_file, models_dir):
     print(f'input_file: {input_file}, label_name: {label_name}')
     df = pd.read_csv(input_file)
 
+    # Only process rows where state is 'ok'
+    df = df[ df['state'] == OK_STATE ]
+
+    # Only keep rows that the label column is not null
+    df = df[ df[label_name].notnull() ]
+
+    # Remove bad columns
     df = remove_bad_columns(df, label_name)
+
+    # Remove memory columns (Only when we are predicting memory)
+    df = remove_memory_columns(df, label_name)
+
+    if df.shape[0] == 0:
+      print(f'No rows in input file {input_file}. Skipping to the next input file')
+      continue
 
     X = df.drop(columns=[label_name], axis=1)
     y = df[label_name] 
