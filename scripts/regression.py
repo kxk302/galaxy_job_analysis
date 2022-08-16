@@ -407,7 +407,7 @@ def predict(inputs_file, models_file, output_file, models_dir):
 
 
 if __name__ == '__main__':
-  argument_parser = argparse.ArgumentParser('Runtime prediction argument parser')
+  argument_parser = argparse.ArgumentParser('Resource prediction argument parser')
   argument_parser.add_argument('--input_files', '-i', type=str, required=True)
   argument_parser.add_argument('--models', '-m', type=str, required=True)
   argument_parser.add_argument('--output_file', '-o', type=str, required=True)
