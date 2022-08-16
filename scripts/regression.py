@@ -36,7 +36,9 @@ IGNORE_FILETYPE = 'chromInfo_filetype'
 BAD_STARTS=['__workflow_invocation_uuid__', 'chromInfo', '__job_resource',
             'reference_source', 'reference_genome', 'rg',
             'readGroup', 'refGenomeSource', 'genomeSource',
-            'tool_version', 'state']
+            'tool_version', 'state',
+            'start_epoch', 'end_epoch',
+            'extension_', 'param_name_', 'type_']
 # List of the ending of bad parameters
 BAD_ENDS = ['id', 'identifier', '__identifier__', 'indeces']
 # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
@@ -48,7 +50,9 @@ NUM_CATEGORIES_CUTOFF = 100
 # Only process rows where state is 'ok'
 OK_STATE = 'ok'
 # Total features importance cuttoff
-FEATURES_IMPORTANCE_CUTOFF = 0.8
+FEATURES_IMPORTANCE_CUTOFF = 0.9
+# GridSearchCV error_score
+ERROR_SCORE = 'raise'
 
 
 def remove_bad_columns(df_in, label_name = None):
@@ -138,6 +142,13 @@ def remove_memory_columns(df_in, label_name = None):
   df = df.drop(df_memory_columns, axis=1)
   return df
 
+
+# For numeric columns, ther is no translation
+# For categorical columns, with OHE, we go from 1 column to N
+# with N being the number of unique values for the categorical column
+# This method returns a list, that specifies 1's for numeric columns, and N's
+# for categorical columns. This allows us to calculate what a specific column,
+# after translation, corresponds to before translation via preprocessor 
 def get_column_translation(df):
   column_translation = []
   num_cols_after_translation = 0
@@ -181,7 +192,7 @@ def get_feature_importance(best_estimator_):
     return feature_importances
   else:
     print(f'{best_estimator_} does not have feature_importances_ property')
-    return None
+    return ""
 
 
 # Given a dataframe as input, returns 2 lists,
@@ -262,7 +273,8 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
                                   scoring=SCORING,
                                   cv=CROSS_VALIDATION_NUM_FOLD,
                                   verbose=VERBOSE,
-                                  n_jobs=NUM_JOBS)
+                                  n_jobs=NUM_JOBS,
+                                  error_score=ERROR_SCORE)
 
     _ = grid_search_cv.fit(X_train, y_train)
     print(f'scorer_: {grid_search_cv.scorer_}')

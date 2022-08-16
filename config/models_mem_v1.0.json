@@ -1,0 +1,193 @@
+{
+  "AdaBoostRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "AdaBoostRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        50,
+        75,
+        100
+      ],
+      "model__loss": [
+        "linear",
+        "square",
+        "exponential"
+      ],
+      "model__learning_rate": [
+        0.5,
+        1.0,
+        1.5        
+      ]
+    }
+  },
+  "BaggingRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "BaggingRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        10,
+        50,
+        100
+      ],
+      "model__bootstrap": [
+        true,
+        false
+      ]
+    }
+  },
+  "ExtraTreesRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "ExtraTreesRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        50,
+        75,
+        100
+      ],
+      "model__max_depth": [
+        5,
+        10,
+        15
+      ],
+      "model__max_features": [
+        "sqrt",
+        "log2"
+      ]
+    }
+  },
+  "GradientBoostingRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "GradientBoostingRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        50,
+        75,
+        100
+      ],
+      "model__max_depth": [
+        5,
+        10,
+        15
+      ],
+      "model__max_features": [
+        "sqrt",
+        "log2"
+      ]
+    }
+  },
+  "RandomForestRegressor": {
+    "module_name": "sklearn.ensemble",
+    "class_name": "RandomForestRegressor",
+    "parameters": {
+      "model__n_estimators": [
+        50,
+        75,
+        100
+      ],
+      "model__max_depth": [
+        5,
+        10,
+        15
+      ],
+      "model__max_features": [
+        "sqrt",
+        "log2"
+      ]
+    }
+  },
+  "LinearRegression": {
+    "module_name": "sklearn.linear_model",
+    "class_name": "LinearRegression",
+    "parameters": {
+      "model__fit_intercept": [
+        true,
+        false
+      ]
+    }
+  },
+  "SGDRegressor": {
+    "module_name": "sklearn.linear_model",
+    "class_name": "SGDRegressor",
+    "parameters": {
+      "model__fit_intercept": [
+        true,
+        false
+      ],
+      "model__penalty": [
+        "l2", 
+        "l1", 
+        "elasticnet"
+      ],
+      "model__max_iter": [
+        1000,
+        1500,
+        2000
+      ],
+      "model__learning_rate": [
+        "constant",
+        "optimal",
+        "invscaling",
+        "adaptive"
+      ]
+    }
+  },
+  "LinearSVR": {
+    "module_name": "sklearn.svm",
+    "class_name": "LinearSVR",
+    "parameters": {
+      "model__fit_intercept": [
+        true,
+        false
+      ],
+      "model__loss": [
+        "epsilon_insensitive", 
+        "squared_epsilon_insensitive"
+      ],
+      "model__max_iter": [
+        1000,
+        1500,
+        2000
+      ]
+    }
+  },
+  "SVR": {
+    "module_name": "sklearn.svm",
+    "class_name": "SVR",
+    "parameters": {
+      "model__kernel": [
+        "poly", 
+        "rbf", 
+        "sigmoid"
+      ],
+      "model__gamma": [
+        "scale",
+        "auto"
+      ]
+    }
+  },
+  "MLPRegressor": {
+    "module_name": "sklearn.neural_network",
+    "class_name": "MLPRegressor",
+    "parameters": {
+      "model__hidden_layer_sizes": [
+        [400, 200, 100, 50, 25, 10],
+        [200, 100, 50, 25, 10],
+        [100, 50, 25, 10],
+        [50, 25, 10]
+      ],
+      "model__activation": [        
+        "logistic", 
+        "tanh", 
+        "relu"
+      ],
+      "model__solver": [
+        "sgd", 
+        "adam"
+      ],
+      "model__learning_rate": [
+        "constant", 
+        "invscaling"
+      ]
+    }
+  }
+}
