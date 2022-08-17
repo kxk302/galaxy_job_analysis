@@ -137,7 +137,7 @@ def remove_memory_columns(df_in, label_name = None):
   df = df_in.copy()
 
   df_columns = df.columns.tolist()
-  df_memory_columns = [column for column in df_columns if 'memory' in column and column != label_name]
+  df_memory_columns = [column for column in df_columns if 'memory' in column and column != MEMORY_LABEL]
   if 'memtotal' in df_columns:
     df_memory_columns.append('memtotal')
   if 'swaptotal' in df_columns:
@@ -159,6 +159,8 @@ def remove_cpu_columns(df_in, label_name = None):
     df_cpu_columns.append('galaxy_slots')
   if 'runtime_seconds' in df_columns:
     df_cpu_columns.append('runtime_seconds')
+  if 'processor_count' in df_columns:
+    df_cpu_columns.append('processor_count')
 
   df = df.drop(df_cpu_columns, axis=1)
   return df
@@ -176,8 +178,12 @@ def cleanup_data(df_in, input_file, label_name):
 
     # Remove bad columns
     df = remove_bad_columns(df, label_name)
-    df = remove_memory_columns(df, label_name)
-    df = remove_cpu_columns(df, label_name)
+
+    if label_name == MEMORY_LABEL:
+      df = remove_memory_columns(df, label_name)
+    if label_name == CPU_LABEL:
+      df = remove_memory_columns(df, label_name)
+      df = remove_cpu_columns(df, label_name)
 
     return df
 
