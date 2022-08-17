@@ -53,6 +53,10 @@ OK_STATE = 'ok'
 FEATURES_IMPORTANCE_CUTOFF = 0.9
 # GridSearchCV error_score
 ERROR_SCORE = 'raise'
+# Memory prediction label
+MEMORY_LABEL = 'memory.max_usage_in_bytes'
+# CPU number + utilization label
+CPU_LABEL = 'cpu.utilization'
 
 
 def remove_bad_columns(df_in, label_name = None):
@@ -143,6 +147,41 @@ def remove_memory_columns(df_in, label_name = None):
   return df
 
 
+# Drop all cpu related columns, besides possibly the label
+def remove_cpu_columns(df_in, label_name = None):
+  df = df_in.copy()
+  df_columns = df.columns.tolist()
+
+  df_cpu_columns = []
+  if 'cpuacct.usage' in df_columns:
+    df_cpu_columns.append('cpuacct.usage')
+  if 'galaxy_slots' in df_columns:
+    df_cpu_columns.append('galaxy_slots')
+  if 'runtime_seconds' in df_columns:
+    df_cpu_columns.append('runtime_seconds')
+
+  df = df.drop(df_cpu_columns, axis=1)
+  return df
+
+
+# Cleanup input data
+def cleanup_data(df_in, input_file, label_name):
+    df = df_in.copy()
+
+    # Only process rows where state is 'ok'
+    df = df[ df['state'] == OK_STATE ]
+
+    # Only keep rows that the label column is not null
+    df = df[ df[label_name].notnull() ]
+
+    # Remove bad columns
+    df = remove_bad_columns(df, label_name)
+    df = remove_memory_columns(df, label_name)
+    df = remove_cpu_columns(df, label_name)
+
+    return df
+
+
 # For numeric columns, ther is no translation
 # For categorical columns, with OHE, we go from 1 column to N
 # with N being the number of unique values for the categorical column
@@ -192,7 +231,24 @@ def get_feature_importance(best_estimator_):
     return feature_importances
   else:
     print(f'{best_estimator_} does not have feature_importances_ property')
-    return ""
+    return "N/A"
+
+
+# Calculate CPU utilization based on ( cpuacct.usage / galaxy_slots) / runtime_seconds
+# Return a number composed of galaxy_slots + cpu utilization calculated based on above formula
+# E.g., if we have 4 galaxy_slots, and calculate 80% CPU utilization, we return 480
+# cpuacct.usage is in nano seconds, whereas runtime_seconds is in seconds. Need to transform
+# cpuacct.usage to seconds before pluggin in the numbers into the above formula
+def get_cpu_utilization(df):
+  utilization_percentage = (( ( df['cpuacct.usage'] / (10 ** 9) ) / df['galaxy_slots'] ) / df['runtime_seconds']) * 100
+  utilization_percentage = utilization_percentage.fillna(0)
+
+  galaxy_slots = df['galaxy_slots'].fillna(0.0)
+
+  galaxy_slots_utilization_percentage = galaxy_slots.astype(int).astype(str) + utilization_percentage.astype(int).astype(str)
+  galaxy_slots_utilization_percentage = galaxy_slots_utilization_percentage.replace('00', '0')
+
+  return galaxy_slots_utilization_percentage.astype(int)
 
 
 # Given a dataframe as input, returns 2 lists,
@@ -249,7 +305,7 @@ def get_preprocessor(categorical_features, numerical_features):
 # models_dir:
 #   Models directory
 #
-def process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir):
+def train_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir):
   for model_name in models:
     print(f'model_name: {model_name}')
     module_name = models[model_name]["module_name"]
@@ -296,27 +352,36 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
     print('column_translation')
     print(column_translation)
 
+    # Create a str representation of best hyper parameters, to be written to output file
     best_params_list = [str(k) +'='+ str(v) for k,v in grid_search_cv.best_params_.items()]
     best_params_str = ";".join(best_params_list)
     print(f'best_params_str: {best_params_str}')
+
+    # Prediction score on test data
     y_predicted = grid_search_cv.predict(X_test)
-    prediction_score = r2_score(y_test, y_predicted)
-    print(f'prediction_score: {prediction_score}')
+    test_score = r2_score(y_test, y_predicted)
+    print(f'prediction_score: {test_score}')
+
+    # Write a row summarizing the training
     o_file.write(",".join([input_file,
                            model_name,
                            label_name,
                            str(grid_search_cv.scorer_),
                            str(grid_search_cv.best_score_),
                            best_params_str,
-                           str(prediction_score),
+                           str(test_score),
                            str(len(grid_search_cv.feature_names_in_.tolist())),
                            ":".join(grid_search_cv.feature_names_in_.tolist()),
                            feature_importance,
                            str(num_cols_after_translation),
                            ":".join(column_translation)])+'\n')
 
-    # Save model to file
-    model_file_name =  os.path.join(models_dir, os.path.basename(input_file) + '_' + model_name)
+    # Save model binary to file
+    if label_name == MEMORY_LABEL:
+      model_file_name =  os.path.join(models_dir, "mem_" + os.path.basename(input_file) + '_' + model_name)
+    if label_name == CPU_LABEL:
+      model_file_name =  os.path.join(models_dir, "cpu_" + os.path.basename(input_file) + '_' + model_name)
+
     with open(model_file_name, 'wb') as fp:
       pickle.dump(grid_search_cv.best_estimator_, fp)
 
@@ -335,6 +400,9 @@ def process_models(models, preprocessor, input_file, label_name, X_train, y_trai
 #
 #   input_file,regressor,label_name,best_score(r2),best_parameters,test_score(r2)
 #
+# models_dir:
+#   Save model binaries to this directory
+#
 def predict(inputs_file, models_file, output_file, models_dir):
   print(f'inputs_file: {inputs_file}')
   df_in = pd.read_csv(inputs_file, comment='#')
@@ -346,26 +414,23 @@ def predict(inputs_file, models_file, output_file, models_dir):
   print(models)
 
   o_file = open(output_file, 'w')
-  o_file.write('input_file,regressor,label_name,scorer_function,best_score,best_parameters,test_score,num_features,feature_names,feature_importance,num_cols_after_translation,column_translation\n')
+  o_file.write('input_file,regressor,label_name,scorer_function,best_score,\
+                best_parameters,test_score,num_features,feature_names,\
+                feature_importance,num_cols_after_translation,column_translation\n')
 
   # Iterate over each file in input_files
   for index, row in df_in.iterrows():
     input_file = row['input_file']
     label_name = row['label_name']
+
     print(f'input_file: {input_file}, label_name: {label_name}')
+
     df = pd.read_csv(input_file)
 
-    # Only process rows where state is 'ok'
-    df = df[ df['state'] == OK_STATE ]
+    if label_name == CPU_LABEL:
+      df[CPU_LABEL] = get_cpu_utilization(df[ ['cpuacct.usage', 'galaxy_slots', 'runtime_seconds'] ])
 
-    # Only keep rows that the label column is not null
-    df = df[ df[label_name].notnull() ]
-
-    # Remove bad columns
-    df = remove_bad_columns(df, label_name)
-
-    # Remove memory columns (Only when we are predicting memory)
-    df = remove_memory_columns(df, label_name)
+    df = cleanup_data(df, input_file, label_name)
 
     if df.shape[0] == 0:
       print(f'No rows in input file {input_file}. Skipping to the next input file')
@@ -401,7 +466,7 @@ def predict(inputs_file, models_file, output_file, models_dir):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
     
     # Iterate over each model in models file
-    process_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir)
+    train_models(models, preprocessor, input_file, label_name, X_train, y_train, X_test, y_test, o_file, models_dir)
 
   o_file.close()
 
@@ -409,8 +474,8 @@ def predict(inputs_file, models_file, output_file, models_dir):
 if __name__ == '__main__':
   argument_parser = argparse.ArgumentParser('Resource prediction argument parser')
   argument_parser.add_argument('--input_files', '-i', type=str, required=True)
-  argument_parser.add_argument('--models', '-m', type=str, required=True)
+  argument_parser.add_argument('--models_file', '-m', type=str, required=True)
   argument_parser.add_argument('--output_file', '-o', type=str, required=True)
   argument_parser.add_argument('--models_dir', '-d', type=str, required=True)
   args = argument_parser.parse_args()
-  predict(args.input_files, args.models, args.output_file, args.models_dir)
+  predict(args.input_files, args.models_file, args.output_file, args.models_dir)
