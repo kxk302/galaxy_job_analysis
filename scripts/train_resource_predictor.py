@@ -132,8 +132,8 @@ def remove_bad_columns(df_in, label_name = None):
   return df
 
 
-# Drop all memory related columns, besides possibly the label
-def remove_memory_columns(df_in, label_name = None):
+# Drop all memory related columns, besides MEMORY_LABEL
+def remove_memory_columns(df_in):
   df = df_in.copy()
 
   df_columns = df.columns.tolist()
@@ -147,8 +147,8 @@ def remove_memory_columns(df_in, label_name = None):
   return df
 
 
-# Drop all cpu related columns, besides possibly the label
-def remove_cpu_columns(df_in, label_name = None):
+# Drop all cpu related columns
+def remove_cpu_columns(df_in):
   df = df_in.copy()
   df_columns = df.columns.tolist()
 
@@ -173,17 +173,18 @@ def cleanup_data(df_in, input_file, label_name):
     # Only process rows where state is 'ok'
     df = df[ df['state'] == OK_STATE ]
 
-    # Only keep rows that the label column is not null
+    # Only keep rows that the label column (memory) is not null
     df = df[ df[label_name].notnull() ]
 
     # Remove bad columns
     df = remove_bad_columns(df, label_name)
 
-    if label_name == MEMORY_LABEL:
-      df = remove_memory_columns(df, label_name)
-    if label_name == CPU_LABEL:
-      df = remove_memory_columns(df, label_name)
-      df = remove_cpu_columns(df, label_name)
+    # Remove memory related columns (except MEMORY_LABEL) and cpu related columns
+    df = remove_memory_columns(df)
+    df = remove_cpu_columns(df)
+
+    # Only keep rows that the label column (cpu) is not 0
+    df = df[ df[label_name] != 0 ]
 
     return df
 

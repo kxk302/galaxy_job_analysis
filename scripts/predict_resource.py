@@ -1,4 +1,4 @@
-import regression
+import train_resource_predictor as trp
 
 import argparse
 import json
@@ -27,18 +27,10 @@ def predict_with_loaded_model(input_file, label_name, model_file):
   with open(model_file, 'rb') as fp:
     loaded_model = pickle.load(fp)
 
-  # Only process rows where state is 'ok'
-  df = df[ df['state'] == regression.OK_STATE ]
+  if label_name == trp.CPU_LABEL:
+      df[trp.CPU_LABEL] = trp.get_cpu_utilization(df[ ['cpuacct.usage', 'galaxy_slots', 'runtime_seconds'] ])
 
-  # Only keep rows that the label column is not null
-  df = df[ df[label_name].notnull() ]
-
-  # Remove bad columns
-  df = regression.remove_bad_columns(df, label_name)
-
-  # Remove memory columns (Only when we are predicting memory)
-  df = regression.remove_memory_columns(df, label_name)
-
+  df = trp.cleanup_data(df, input_file, label_name)
   if df.shape[0] == 0:
     print(f'No rows in input file {input_file}. Skipping to the next input file')
     return
@@ -55,6 +47,7 @@ def predict_with_loaded_model(input_file, label_name, model_file):
   actual_vs_predicted_df = pd.DataFrame({'Actual': y.values, 'Predicted': y_predicted})
   print(actual_vs_predicted_df.head())
   print(actual_vs_predicted_df.shape)
+  print(f'prediction_score: {prediction_score}')
 
   plt.scatter(y.values, y_predicted)
   plt.xlabel('Actual')
