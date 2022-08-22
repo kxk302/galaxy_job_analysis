@@ -44,12 +44,17 @@ def predict_with_loaded_model(input_file, label_name, model_file):
   y_predicted = loaded_model.predict(X)
   prediction_score = r2_score(y.values, y_predicted)
 
-  actual_vs_predicted_df = pd.DataFrame({'Actual': y.values, 'Predicted': y_predicted})
+  # Reverse the log1p transformation
+  y_predicted = np.expm1(y_predicted)
+  y_actual = np.expm1(y.values)
+
+  actual_vs_predicted_df = pd.DataFrame({'Actual': y_actual, 'Predicted': y_predicted})
+  actual_vs_predicted_df.to_csv('actual_vs_predicted.csv', sep=',')
   print(actual_vs_predicted_df.head())
   print(actual_vs_predicted_df.shape)
   print(f'prediction_score: {prediction_score}')
 
-  plt.scatter(y.values, y_predicted)
+  plt.scatter(y_actual, y_predicted)
   plt.xlabel('Actual')
   plt.ylabel('Predicted')
   plt.text(21, 24, 'R^2: ' + str(prediction_score), fontsize = 8)

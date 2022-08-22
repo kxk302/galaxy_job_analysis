@@ -252,8 +252,11 @@ def get_cpu_utilization(df):
 
   galaxy_slots = df['galaxy_slots'].fillna(0.0)
 
-  galaxy_slots_utilization_percentage = galaxy_slots.astype(int).astype(str) + utilization_percentage.astype(int).astype(str)
-  galaxy_slots_utilization_percentage = galaxy_slots_utilization_percentage.replace('00', '0')
+  galaxy_slots_utilization_percentage = galaxy_slots.astype(int).astype(str) + utilization_percentage.astype(int).astype(str).str.zfill(2)
+  # If galaxy_slots is na (replaced by 0) and utilization_percentage is also na (replaced by 00),
+  # galaxy_slots_utilization_percentage would be '000'. Replace that with 0. Such rows are ignored
+  # during model training.
+  galaxy_slots_utilization_percentage = galaxy_slots_utilization_percentage.replace('000', '0')
 
   return galaxy_slots_utilization_percentage.astype(int)
 
