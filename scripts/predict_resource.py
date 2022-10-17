@@ -27,9 +27,6 @@ def predict_with_loaded_model(input_file, label_name, model_file):
   with open(model_file, 'rb') as fp:
     loaded_model = pickle.load(fp)
 
-  if label_name == trp.CPU_LABEL:
-      df[trp.CPU_LABEL] = trp.get_cpu_utilization(df[ ['cpuacct.usage', 'galaxy_slots', 'runtime_seconds'] ])
-
   df = trp.cleanup_data(df, input_file, label_name)
   if df.shape[0] == 0:
     print(f'No rows in input file {input_file}. Skipping to the next input file')

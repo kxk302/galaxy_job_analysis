@@ -60,6 +60,8 @@ NULL_CUTOFF = 0.75
 NUM_CATEGORIES_CUTOFF = 100
 # Only process rows where state is 'ok'
 OK_STATE = "ok"
+# "state" column in dataframe
+STATE_COL = "state"
 # Total features importance cuttoff
 FEATURES_IMPORTANCE_CUTOFF = 0.9
 # GridSearchCV error_score
@@ -201,7 +203,8 @@ def cleanup_data(df_in, input_file, label_name):
     df = df_in.copy()
 
     # Only process rows where state is 'ok'
-    df = df[df["state"] == OK_STATE]
+    if STATE_COL in df.columns:
+        df = df[df[STATE_COL] == OK_STATE]
 
     # Only keep rows that the label column (memory) is not null
     df = df[df[label_name].notnull()]
@@ -295,6 +298,7 @@ def get_cpu_utilization(df):
         ((df["cpuacct.usage"] / (10**9)) / df["galaxy_slots"]) / df["runtime_seconds"]
     ) * 100
     utilization_percentage = utilization_percentage.fillna(0)
+    utilization_percentage = utilization_percentage.replace([np.inf, -np.inf], 0)
 
     galaxy_slots = df["galaxy_slots"].fillna(0.0)
 
@@ -516,11 +520,6 @@ def predict(inputs_file, models_file, output_file, models_dir):
         print(f"input_file: {input_file}, label_name: {label_name}")
 
         df = pd.read_csv(input_file)
-
-        if label_name == CPU_LABEL:
-            df[CPU_LABEL] = get_cpu_utilization(
-                df[["cpuacct.usage", "galaxy_slots", "runtime_seconds"]]
-            )
 
         df = cleanup_data(df, input_file, label_name)
 
