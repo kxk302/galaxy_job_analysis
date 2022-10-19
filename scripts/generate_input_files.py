@@ -94,6 +94,11 @@ def generate_input_files(
     print(jobs_df.shape)
     print("\n")
 
+    # Filter output files as in prediction we only care about input files
+    print(f'Size of dataset_df Prior to filtering oputput files: {datasets_df.shape[0]}')
+    datasets_df = datasets_df[ datasets_df["type"] != "output" ]
+    print(f'Size of dataset_df After to filtering oputput files: {datasets_df.shape[0]}')
+
     # Pivot numeric metrics, so we have one row per job ID
     numeric_metrics_df_piv = numeric_metrics_df[
         ["job_id", "metric_name", "metric_value"]

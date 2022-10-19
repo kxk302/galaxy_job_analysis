@@ -180,7 +180,7 @@ def remove_memory_columns(df_in):
 
 
 # Drop all cpu related columns
-def remove_cpu_columns(df_in):
+def remove_cpu_columns(df_in, label_name):
     df = df_in.copy()
     df_columns = df.columns.tolist()
 
@@ -193,6 +193,9 @@ def remove_cpu_columns(df_in):
         df_cpu_columns.append("runtime_seconds")
     if "processor_count" in df_columns:
         df_cpu_columns.append("processor_count")
+    # If training a model for memory predition, can remove cpu utilization column
+    if label_name == MEMORY_LABEL:
+        df_cpu_columns.append(CPU_LABEL)
 
     df = df.drop(df_cpu_columns, axis=1)
     return df
@@ -214,7 +217,7 @@ def cleanup_data(df_in, input_file, label_name):
 
     # Remove memory related columns (except MEMORY_LABEL) and cpu related columns
     df = remove_memory_columns(df)
-    df = remove_cpu_columns(df)
+    df = remove_cpu_columns(df, label_name)
 
     # Only keep rows that the label column (cpu) is not 0
     df = df[df[label_name] != 0]

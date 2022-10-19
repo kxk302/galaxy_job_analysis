@@ -1,25 +1,12 @@
 input_file,label_name
-./data/0.19.5+galaxy1_0.19.5+galaxy1.csv,cpu.utilization
-#./data/0.38.0_0.38.0.csv,cpu.utilization
-#./data/0.4.8.0_0.4.8.0.csv,cpu.utilization
-#./data/0.7.17.2_0.7.17.2.csv,cpu.utilization
-#./data/0.72+galaxy1_0.72+galaxy1.csv,cpu.utilization
-#./data/1.1.3_1.1.3.csv,cpu.utilization
-#./data/1.1.5_1.1.5.csv,cpu.utilization
-#./data/1.3.1_1.3.1.csv,cpu.utilization
-#./data/1.6_1.6.csv,cpu.utilization
-#./data/2.1.1_2.1.1.csv,cpu.utilization
-#./data/2.1.5+galaxy1_2.1.5+galaxy1.csv,cpu.utilization
-#./data/2.2.1+galaxy0_2.2.1+galaxy0.csv,cpu.utilization
-#./data/2.4.2+galaxy0_2.4.2+galaxy0.csv,cpu.utilization
-#./data/2.7.8a+galaxy0_2.7.8a+galaxy0.csv,cpu.utilization
-#./data/2.9.1+galaxy1_2.9.1+galaxy1.csv,cpu.utilization
-#./data/3.12.0+galaxy1_3.12.0+galaxy1.csv,cpu.utilization
-#./data/4.3+t.galaxy0_4.3+t.galaxy0.csv,cpu.utilization
-#./data/4.3+t.galaxy1_4.3+t.galaxy1.csv,cpu.utilization
-#./data/5.2.2+galaxy0_5.2.2+galaxy0.csv,cpu.utilization
-#./data/CONVERTER_gz_to_uncompressed_1.0.0.csv,cpu.utilization
-#./data/Cut1_1.0.2.csv,cpu.utilization
-#./data/Filter1_1.1.0.csv,cpu.utilization
-#./data/Filter1_1.1.1.csv,cpu.utilization
-#./data/ucsc_table_direct1_1.0.0.csv,cpu.utilization
+# ./data/freebayes/1.3.1_1.3.1.tsv,cpu.utilization
+# ./data/featurecounts/2.0.1+galaxy2_2.0.1+galaxy2.tsv,cpu.utilization
+# ./data/deseq2/2.11.40.7+galaxy1_2.11.40.7+galaxy1.tsv,cpu.utilization
+# ./data/multiqc/1.9+galaxy1_1.9+galaxy1.tsv,cpu.utilization
+# ./data/trimmomatic/0.38.0_0.38.0.tsv,cpu.utilization
+# ./data/rna_star/2.7.8a+galaxy0_2.7.8a+galaxy0.tsv,cpu.utilization
+# ./data/hisat2/2.2.1+galaxy0_2.2.1+galaxy0.tsv,cpu.utilization
+# ./data/minimap2/2.24+galaxy0_2.24+galaxy0.tsv,cpu.utilization
+# ./data/fastqc/0.73+galaxy0_0.73+galaxy0.tsv,cpu.utilization
+# ./data/bwa_mem/2.2.1+galaxy0_2.2.1+galaxy0.tsv,cpu.utilization
+./data/bowtie2/2.4.2+galaxy0_2.4.2+galaxy0.tsv,cpu.utilization
