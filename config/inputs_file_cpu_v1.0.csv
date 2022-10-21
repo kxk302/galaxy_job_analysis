@@ -8,5 +8,5 @@ input_file,label_name
 # ./data/hisat2/2.2.1+galaxy0_2.2.1+galaxy0.tsv,cpu.utilization
 # ./data/minimap2/2.24+galaxy0_2.24+galaxy0.tsv,cpu.utilization
 # ./data/fastqc/0.73+galaxy0_0.73+galaxy0.tsv,cpu.utilization
-# ./data/bwa_mem/2.2.1+galaxy0_2.2.1+galaxy0.tsv,cpu.utilization
+# ./data/bwa_mem/0.7.17.2_0.7.17.2.tsv,cpu.utilization
 ./data/bowtie2/2.4.2+galaxy0_2.4.2+galaxy0.tsv,cpu.utilization
