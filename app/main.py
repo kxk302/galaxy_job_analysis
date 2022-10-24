@@ -125,11 +125,28 @@ async def startup_event():
         models["freebayes-cpu"] = pickle.load(fp)
 
 
+# Takes in a number in bytes, and return a string
+# representation in Kilo, Mega, or Giga bytes
+def to_kilo_mega_giga_bytes(mem_bytes):
+    if mem_bytes < 2**10:
+        return str(mem_bytes)
+    elif mem_bytes >= 2**10 and mem_bytes < 2**20:
+        return str(round(mem_bytes / 2**10, 2)) + "KB"
+    elif mem_bytes >= 2**20 and mem_bytes < 2**30:
+        return str(round(mem_bytes / 2**20, 2)) + "MB"
+    elif mem_bytes >= 2**30:
+        return str(round(mem_bytes / 2**30, 2)) + "GB"
+
+
 ###########
 ## bowtie2
 ###########
 @api_router.get("/bowtie2/memory/", status_code=200)
-def predict_bowtie2_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_bowtie2_memory(
+    file_size_bytes_1: int,
+    file_size_bytes_2: int,
+    format_output: bool = False,
+) -> dict:
     tool_name = "bowtie2-mem"
     loaded_model = models[tool_name]
 
@@ -146,7 +163,13 @@ def predict_bowtie2_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> di
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
 
-    return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
+
+    return {
+        "Tool name": tool_name,
+        "Required memory": y_predicted_denormalized,
+    }
 
 
 @api_router.get("/bowtie2/cpu/", status_code=200)
@@ -179,7 +202,10 @@ def predict_bowtie2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
 ###########
 @api_router.get("/bwa_mem/memory/", status_code=200)
 def predict_bwa_mem_memory(
-    file_size_bytes_1: int, file_size_bytes_2: int, file_size_bytes_3: int
+    file_size_bytes_1: int,
+    file_size_bytes_2: int,
+    file_size_bytes_3: int,
+    format_output: bool = False,
 ) -> dict:
     tool_name = "bwa_mem-mem"
     loaded_model = models[tool_name]
@@ -198,16 +224,23 @@ def predict_bwa_mem_memory(
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
 
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
+
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
 
 @api_router.get("/bwa_mem/cpu/", status_code=200)
 def predict_bwa_mem_cpu(
-    file_size_bytes_1: int, file_size_bytes_2: int, file_size_bytes_3: int
+    file_size_bytes_1: int,
+    file_size_bytes_2: int,
+    file_size_bytes_3: int,
 ) -> dict:
 
     result = predict_bwa_mem_memory(
-        file_size_bytes_1, file_size_bytes_2, file_size_bytes_3
+        file_size_bytes_1,
+        file_size_bytes_2,
+        file_size_bytes_3,
     )
 
     tool_name = "bwa_mem-cpu"
@@ -235,7 +268,7 @@ def predict_bwa_mem_cpu(
 ## fastqc
 ###########
 @api_router.get("/fastqc/memory/", status_code=200)
-def predict_fastqc_memory(file_size_bytes_1: int) -> dict:
+def predict_fastqc_memory(file_size_bytes_1: int, format_output: bool = False) -> dict:
     tool_name = "fastqc-mem"
     loaded_model = models[tool_name]
 
@@ -248,6 +281,9 @@ def predict_fastqc_memory(file_size_bytes_1: int) -> dict:
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
@@ -280,7 +316,9 @@ def predict_fastqc_cpu(file_size_bytes_1: int) -> dict:
 ## minimap2
 ############
 @api_router.get("/minimap2/memory/", status_code=200)
-def predict_minimap2_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_minimap2_memory(
+    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
+) -> dict:
     tool_name = "minimap2-mem"
     loaded_model = models[tool_name]
 
@@ -296,6 +334,9 @@ def predict_minimap2_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> d
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
@@ -329,7 +370,9 @@ def predict_minimap2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict
 ## hisat2
 ###########
 @api_router.get("/hisat2/memory/", status_code=200)
-def predict_hisat2_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_hisat2_memory(
+    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
+) -> dict:
     tool_name = "hisat2-mem"
     loaded_model = models[tool_name]
 
@@ -345,6 +388,9 @@ def predict_hisat2_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> dic
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
@@ -379,7 +425,10 @@ def predict_hisat2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
 ############
 @api_router.get("/rna_star/memory/", status_code=200)
 def predict_rna_star_memory(
-    file_size_bytes_1: int, file_size_bytes_2: int, file_size_bytes_3: int
+    file_size_bytes_1: int,
+    file_size_bytes_2: int,
+    file_size_bytes_3: int,
+    format_output: bool = False,
 ) -> dict:
     tool_name = "rna_star-mem"
     loaded_model = models[tool_name]
@@ -397,6 +446,9 @@ def predict_rna_star_memory(
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
@@ -435,7 +487,9 @@ def predict_rna_star_cpu(
 ## trimmomatic
 ###############
 @api_router.get("/trimmomatic/memory/", status_code=200)
-def predict_trimmomatic_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_trimmomatic_memory(
+    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
+) -> dict:
     tool_name = "trimmomatic-mem"
     loaded_model = models[tool_name]
 
@@ -451,6 +505,9 @@ def predict_trimmomatic_memory(file_size_bytes_1: int, file_size_bytes_2: int) -
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
@@ -485,7 +542,7 @@ def predict_trimmomatic_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> d
 #################
 @api_router.get("/featurecounts/memory/", status_code=200)
 def predict_featurecounts_memory(
-    file_size_bytes_1: int, file_size_bytes_2: int
+    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
 ) -> dict:
     tool_name = "featurecounts-mem"
     loaded_model = models[tool_name]
@@ -502,6 +559,9 @@ def predict_featurecounts_memory(
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
@@ -535,7 +595,9 @@ def predict_featurecounts_cpu(file_size_bytes_1: int, file_size_bytes_2: int) ->
 ## freebayes
 #############
 @api_router.get("/freebayes/memory/", status_code=200)
-def predict_freebayes_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_freebayes_memory(
+    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
+) -> dict:
     tool_name = "freebayes-mem"
     loaded_model = models[tool_name]
 
@@ -551,6 +613,9 @@ def predict_freebayes_memory(file_size_bytes_1: int, file_size_bytes_2: int) -> 
     # y_predicted is a numpy array. Call tolist() and get the first value from list
     # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+
+    if format_output:
+        y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
 
     return {"Tool name": tool_name, "Required memory": y_predicted_denormalized}
 
