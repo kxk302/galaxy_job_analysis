@@ -6,7 +6,7 @@ import pandas as pd
 
 from train_resource_predictor import STATE_COL
 
-
+"""
 def get_datasets_fields(df):
     # Call melt on the dataframe so each metric/metric value
     # for a dataset id is in one row as shown below
@@ -49,6 +49,7 @@ def get_datasets_fields(df):
     # Call reset_index after row is deleted
     df_t.reset_index(inplace=True, drop=True)
     return df_t
+    """
 
 
 def read_input_files(jobs_file, datasets_file, numeric_metrics_file, separator):
@@ -95,9 +96,19 @@ def generate_input_files(
     print("\n")
 
     # Filter output files as in prediction we only care about input files
-    print(f'Size of dataset_df Prior to filtering oputput files: {datasets_df.shape[0]}')
-    datasets_df = datasets_df[ datasets_df["type"] != "output" ]
-    print(f'Size of dataset_df After to filtering oputput files: {datasets_df.shape[0]}')
+    print(
+        f"Size of dataset_df Prior to filtering oputput files: {datasets_df.shape[0]}"
+    )
+    datasets_df = datasets_df[datasets_df["type"] != "output"]
+    print(
+        f"Size of dataset_df After to filtering oputput files: {datasets_df.shape[0]}"
+    )
+
+    # Pivot dataset_df so that for each job_id, we have a row of file sizes, one for each input file
+    datasets_df_piv = pd.pivot_table(
+        datasets_df, index="job_id", columns="param_name", values="file_size_bytes"
+    )
+    datasets_df_piv.reset_index(inplace=True)
 
     # Pivot numeric metrics, so we have one row per job ID
     numeric_metrics_df_piv = numeric_metrics_df[
@@ -150,9 +161,8 @@ def generate_input_files(
                 )
                 print("\n")
 
-            my_dataset_fields = get_datasets_fields(
-                datasets_df[datasets_df["job_id"] == a_job_id]
-            )
+            my_dataset_fields = datasets_df_piv[datasets_df_piv["job_id"] == a_job_id]
+            my_dataset_fields.reset_index(inplace=True, drop=True)
 
             my_jobs_metrics_df = jobs_metrics_df[
                 (jobs_metrics_df["job_id"] == a_job_id)

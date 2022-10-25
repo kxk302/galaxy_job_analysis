@@ -49,6 +49,8 @@ BAD_STARTS = [
     "extension_",
     "param_name_",
     "type_",
+    "create_time",
+    "job_id",
 ]
 # List of the ending of bad parameters
 BAD_ENDS = ["id", "identifier", "__identifier__", "indeces"]
@@ -107,40 +109,6 @@ def remove_bad_columns(df_in, label_name=None):
                 df[parameter] = df[parameter].str[1:-1].astype(float)
             except:
                 df[parameter] = df[parameter].str[1:-1]
-
-        # If more than UNIQUE_CUTOFF of the rows have a unique value, remove the categorical feature
-        if (
-            df[parameter].dtype == object
-            and len(df[parameter].unique()) >= UNIQUE_CUTOFF * df.shape[0]
-        ):
-            bad_parameters.append(parameter)
-
-        # If more than NULL_CUTOFF of the rows are null, remove the feature
-        if df[parameter].isnull().sum() >= NULL_CUTOFF * df.shape[0]:
-            bad_parameters.append(parameter)
-
-        # If the number of categories is greater than NUM_CATEGORIES_CUTOFF remove
-        if (
-            df[parameter].dtype == object
-            and len(df[parameter].unique()) >= NUM_CATEGORIES_CUTOFF
-        ):
-            bad_parameters.append(parameter)
-
-        # If the feature is a list remove
-        if all(
-            type(item) == str and item.startswith("[") and item.endswith("]")
-            for item in series
-        ):
-            if all(type(ast.literal_eval(item)) == list for item in series):
-                bad_parameters.append(parameter)
-
-        # If the feature is a dict remove
-        if all(
-            type(item) == str and item.startswith("{") and item.endswith("}")
-            for item in series
-        ):
-            if all(type(ast.literal_eval(item)) == dict for item in series):
-                bad_parameters.append(parameter)
 
     for file in files:
         bad_parameters.append(file + ".values")

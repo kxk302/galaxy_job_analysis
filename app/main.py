@@ -15,7 +15,7 @@ models = {}
 @app.on_event("startup")
 async def startup_event():
     with open(
-        "../models/bowtie2/mem/mem_2.4.2+galaxy0_2.4.2+galaxy0.tsv_BaggingRegressor",
+        "../models/bowtie2/mem/mem_2.4.2+galaxy0_2.4.2+galaxy0.tsv_GradientBoostingRegressor",
         "rb",
     ) as fp:
         models["bowtie2-mem"] = pickle.load(fp)
@@ -143,17 +143,30 @@ def to_kilo_mega_giga_bytes(mem_bytes):
 ###########
 @api_router.get("/bowtie2/memory/", status_code=200)
 def predict_bowtie2_memory(
-    file_size_bytes_1: int,
-    file_size_bytes_2: int,
+    fastqsanger_file_size_bytes_1: int = 0,
+    fastqsanger_file_size_bytes_2: int = 0,
+    fastqsanger_gz_file_size_bytes_1: int = 0,
+    fastqsanger_gz_file_size_bytes_2: int = 0,
+    fasta_file_size_bytes: int = 0,
     format_output: bool = False,
 ) -> dict:
     tool_name = "bowtie2-mem"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
+        "input_1": float(fastqsanger_file_size_bytes_1),
+        "input_11": float(fastqsanger_gz_file_size_bytes_1),
+        "input_12": float(fastqsanger_gz_file_size_bytes_2),
+        "input_2": float(fastqsanger_file_size_bytes_2),
+        "own_file": float(fasta_file_size_bytes),
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -173,18 +186,40 @@ def predict_bowtie2_memory(
 
 
 @api_router.get("/bowtie2/cpu/", status_code=200)
-def predict_bowtie2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_bowtie2_cpu(
+    fastqsanger_file_size_bytes_1: int = 0,
+    fastqsanger_file_size_bytes_2: int = 0,
+    fastqsanger_gz_file_size_bytes_1: int = 0,
+    fastqsanger_gz_file_size_bytes_2: int = 0,
+    fasta_file_size_bytes: int = 0,
+) -> dict:
 
-    result = predict_bowtie2_memory(file_size_bytes_1, file_size_bytes_2)
+    result = predict_bowtie2_memory(
+        fastqsanger_file_size_bytes_1,
+        fastqsanger_file_size_bytes_2,
+        fastqsanger_gz_file_size_bytes_1,
+        fastqsanger_gz_file_size_bytes_2,
+        fasta_file_size_bytes,
+    )
 
     tool_name = "bowtie2-cpu"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
-        "memory.max_usage_in_bytes": result["Required memory"],
+        "input_1": float(fastqsanger_file_size_bytes_1),
+        "input_2": float(fastqsanger_file_size_bytes_2),
+        "input_11": float(fastqsanger_gz_file_size_bytes_1),
+        "input_12": float(fastqsanger_gz_file_size_bytes_2),
+        "own_file": float(fasta_file_size_bytes),
+        "memory.max_usage_in_bytes": float(result["Required memory"]),
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
