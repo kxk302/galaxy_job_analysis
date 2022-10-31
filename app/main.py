@@ -25,7 +25,8 @@ async def startup_event():
     ) as fp:
         models["bowtie2-cpu"] = pickle.load(fp)
     with open(
-        "../models/bwa_mem/mem/mem_0.7.17.2_0.7.17.2.tsv_BaggingRegressor", "rb"
+        "../models/bwa_mem/mem/mem_0.7.17.2_0.7.17.2.tsv_GradientBoostingRegressor",
+        "rb",
     ) as fp:
         models["bwa_mem-mem"] = pickle.load(fp)
     with open(
@@ -34,17 +35,17 @@ async def startup_event():
     ) as fp:
         models["bwa_mem-cpu"] = pickle.load(fp)
     with open(
-        "../models/fastqc/mem/mem_0.73+galaxy0_0.73+galaxy0.tsv_RandomForestRegressor",
+        "../models/fastqc/mem/mem_0.73+galaxy0_0.73+galaxy0.tsv_GradientBoostingRegressor",
         "rb",
     ) as fp:
         models["fastqc-mem"] = pickle.load(fp)
     with open(
-        "../models/fastqc/cpu/cpu_0.73+galaxy0_0.73+galaxy0.tsv_RandomForestRegressor",
+        "../models/fastqc/cpu/cpu_0.73+galaxy0_0.73+galaxy0.tsv_GradientBoostingRegressor",
         "rb",
     ) as fp:
         models["fastqc-cpu"] = pickle.load(fp)
     with open(
-        "../models/minimap2/mem/mem_2.24+galaxy0_2.24+galaxy0.tsv_BaggingRegressor",
+        "../models/minimap2/mem/mem_2.24+galaxy0_2.24+galaxy0.tsv_GradientBoostingRegressor",
         "rb",
     ) as fp:
         models["minimap2-mem"] = pickle.load(fp)
@@ -53,36 +54,36 @@ async def startup_event():
         "rb",
     ) as fp:
         models["minimap2-cpu"] = pickle.load(fp)
-    with open(
-        "../models/hisat2/mem/mem_2.2.1+galaxy0_2.2.1+galaxy0.tsv_RandomForestRegressor",
-        "rb",
-    ) as fp:
-        models["hisat2-mem"] = pickle.load(fp)
-    with open(
-        "../models/hisat2/cpu/cpu_2.2.1+galaxy0_2.2.1+galaxy0.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["hisat2-cpu"] = pickle.load(fp)
-    with open(
-        "../models/rna_star/mem/mem_2.7.8a+galaxy0_2.7.8a+galaxy0.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["rna_star-mem"] = pickle.load(fp)
-    with open(
-        "../models/rna_star/cpu/cpu_2.7.8a+galaxy0_2.7.8a+galaxy0.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["rna_star-cpu"] = pickle.load(fp)
-    with open(
-        "../models/trimmomatic/mem/mem_0.38.0_0.38.0.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["trimmomatic-mem"] = pickle.load(fp)
-    with open(
-        "../models/trimmomatic/cpu/cpu_0.38.0_0.38.0.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["trimmomatic-cpu"] = pickle.load(fp)
+    # with open(
+    #     "../models/hisat2/mem/mem_2.2.1+galaxy0_2.2.1+galaxy0.tsv_RandomForestRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["hisat2-mem"] = pickle.load(fp)
+    # with open(
+    #     "../models/hisat2/cpu/cpu_2.2.1+galaxy0_2.2.1+galaxy0.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["hisat2-cpu"] = pickle.load(fp)
+    # with open(
+    #     "../models/rna_star/mem/mem_2.7.8a+galaxy0_2.7.8a+galaxy0.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["rna_star-mem"] = pickle.load(fp)
+    # with open(
+    #     "../models/rna_star/cpu/cpu_2.7.8a+galaxy0_2.7.8a+galaxy0.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["rna_star-cpu"] = pickle.load(fp)
+    # with open(
+    #     "../models/trimmomatic/mem/mem_0.38.0_0.38.0.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["trimmomatic-mem"] = pickle.load(fp)
+    # with open(
+    #     "../models/trimmomatic/cpu/cpu_0.38.0_0.38.0.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["trimmomatic-cpu"] = pickle.load(fp)
     # with open(
     #     "../models/multiqc/mem/",
     #     "rb",
@@ -113,16 +114,16 @@ async def startup_event():
         "rb",
     ) as fp:
         models["featurecounts-cpu"] = pickle.load(fp)
-    with open(
-        "../models/freebayes/mem/mem_1.3.1_1.3.1.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["freebayes-mem"] = pickle.load(fp)
-    with open(
-        "../models/freebayes/cpu/cpu_1.3.1_1.3.1.tsv_GradientBoostingRegressor",
-        "rb",
-    ) as fp:
-        models["freebayes-cpu"] = pickle.load(fp)
+    # with open(
+    #     "../models/freebayes/mem/mem_1.3.1_1.3.1.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["freebayes-mem"] = pickle.load(fp)
+    # with open(
+    #     "../models/freebayes/cpu/cpu_1.3.1_1.3.1.tsv_GradientBoostingRegressor",
+    #     "rb",
+    # ) as fp:
+    #     models["freebayes-cpu"] = pickle.load(fp)
 
 
 # Takes in a number in bytes, and return a string
@@ -163,10 +164,10 @@ def predict_bowtie2_memory(
 
     # The default value for input parameters is 0
     # The model expects nan for 0 values
+
     for key in params:
         if params[key] == 0:
             params[key] = np.nan
-
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -237,19 +238,30 @@ def predict_bowtie2_cpu(
 ###########
 @api_router.get("/bwa_mem/memory/", status_code=200)
 def predict_bwa_mem_memory(
-    file_size_bytes_1: int,
-    file_size_bytes_2: int,
-    file_size_bytes_3: int,
+    fastq_input1: int = 0,
+    fastq_input11: int = 0,
+    fastq_input12: int = 0,
+    fastq_input2: int = 0,
+    ref_file: int = 0,
     format_output: bool = False,
 ) -> dict:
     tool_name = "bwa_mem-mem"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
-        "file_size_bytes_3.0": file_size_bytes_3,
+        "fastq_input1": float(fastq_input1),
+        "fastq_input11": float(fastq_input11),
+        "fastq_input12": float(fastq_input12),
+        "fastq_input2": float(fastq_input2),
+        "ref_file": float(ref_file),
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -267,26 +279,39 @@ def predict_bwa_mem_memory(
 
 @api_router.get("/bwa_mem/cpu/", status_code=200)
 def predict_bwa_mem_cpu(
-    file_size_bytes_1: int,
-    file_size_bytes_2: int,
-    file_size_bytes_3: int,
+    fastq_input1: int = 0,
+    fastq_input11: int = 0,
+    fastq_input12: int = 0,
+    fastq_input2: int = 0,
+    ref_file: int = 0,
 ) -> dict:
 
     result = predict_bwa_mem_memory(
-        file_size_bytes_1,
-        file_size_bytes_2,
-        file_size_bytes_3,
+        fastq_input1,
+        fastq_input11,
+        fastq_input12,
+        fastq_input2,
+        ref_file,
     )
 
     tool_name = "bwa_mem-cpu"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
-        "file_size_bytes_3.0": file_size_bytes_3,
-        "memory.max_usage_in_bytes": result["Required memory"],
+        "fastq_input1": float(fastq_input1),
+        "fastq_input11": float(fastq_input11),
+        "fastq_input12": float(fastq_input12),
+        "fastq_input2": float(fastq_input2),
+        "ref_file": float(ref_file),
+        "memory.max_usage_in_bytes": float(result["Required memory"]),
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -303,11 +328,29 @@ def predict_bwa_mem_cpu(
 ## fastqc
 ###########
 @api_router.get("/fastqc/memory/", status_code=200)
-def predict_fastqc_memory(file_size_bytes_1: int, format_output: bool = False) -> dict:
+def predict_fastqc_memory(
+    adapters: int = 0,
+    contaminants: int = 0,
+    input_file: int = 0,
+    limits: int = 0,
+    format_output: bool = False,
+) -> dict:
     tool_name = "fastqc-mem"
     loaded_model = models[tool_name]
 
-    params = {"file_size_bytes_1.0": file_size_bytes_1}
+    params = {
+        "adapters": float(adapters),
+        "contaminants": float(contaminants),
+        "input_file": float(input_file),
+        "limits": float(limits),
+    }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -324,17 +367,29 @@ def predict_fastqc_memory(file_size_bytes_1: int, format_output: bool = False) -
 
 
 @api_router.get("/fastqc/cpu/", status_code=200)
-def predict_fastqc_cpu(file_size_bytes_1: int) -> dict:
+def predict_fastqc_cpu(
+    adapters: int = 0, contaminants: int = 0, input_file: int = 0, limits: int = 0
+) -> dict:
 
-    result = predict_fastqc_memory(file_size_bytes_1)
+    result = predict_fastqc_memory(adapters, contaminants, input_file, limits)
 
     tool_name = "fastqc-cpu"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "memory.max_usage_in_bytes": result["Required memory"],
+        "adapters": float(adapters),
+        "contaminants": float(contaminants),
+        "input_file": float(input_file),
+        "limits": float(limits),
+        "memory.max_usage_in_bytes": float(result["Required memory"]),
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -352,15 +407,33 @@ def predict_fastqc_cpu(file_size_bytes_1: int) -> dict:
 ############
 @api_router.get("/minimap2/memory/", status_code=200)
 def predict_minimap2_memory(
-    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
+    fastq_input1: int = 0,
+    fastq_input11: int = 0,
+    fastq_input12: int = 0,
+    fastq_input2: int = 0,
+    ref_file: int = 0,
+    format_output: bool = False,
 ) -> dict:
     tool_name = "minimap2-mem"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
+        "fastq_input1": float(fastq_input1),
+        "fastq_input11": float(fastq_input11),
+        "fastq_input12": float(fastq_input12),
+        "fastq_input2": float(fastq_input2),
+        "ref_file": float(ref_file),
+        "alignment_options|splicing|junc_bed": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -377,18 +450,39 @@ def predict_minimap2_memory(
 
 
 @api_router.get("/minimap2/cpu/", status_code=200)
-def predict_minimap2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_minimap2_cpu(
+    fastq_input1: int = 0,
+    fastq_input11: int = 0,
+    fastq_input12: int = 0,
+    fastq_input2: int = 0,
+    ref_file: int = 0,
+) -> dict:
 
-    result = predict_minimap2_memory(file_size_bytes_1, file_size_bytes_2)
+    result = predict_minimap2_memory(
+        fastq_input1, fastq_input11, fastq_input12, fastq_input2, ref_file
+    )
 
     tool_name = "minimap2-cpu"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
+        "fastq_input1": float(fastq_input1),
+        "fastq_input11": float(fastq_input11),
+        "fastq_input12": float(fastq_input12),
+        "fastq_input2": float(fastq_input2),
+        "ref_file": float(ref_file),
         "memory.max_usage_in_bytes": result["Required memory"],
+        "alignment_options|splicing|junc_bed": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -404,6 +498,7 @@ def predict_minimap2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict
 ###########
 ## hisat2
 ###########
+"""
 @api_router.get("/hisat2/memory/", status_code=200)
 def predict_hisat2_memory(
     file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
@@ -453,11 +548,13 @@ def predict_hisat2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
+"""
 
 
 ############
 ## rna_star
 ############
+"""
 @api_router.get("/rna_star/memory/", status_code=200)
 def predict_rna_star_memory(
     file_size_bytes_1: int,
@@ -516,11 +613,13 @@ def predict_rna_star_cpu(
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
+"""
 
 
 ###############
 ## trimmomatic
 ###############
+"""
 @api_router.get("/trimmomatic/memory/", status_code=200)
 def predict_trimmomatic_memory(
     file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
@@ -570,6 +669,7 @@ def predict_trimmomatic_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> d
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
+"""
 
 
 #################
@@ -577,15 +677,30 @@ def predict_trimmomatic_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> d
 #################
 @api_router.get("/featurecounts/memory/", status_code=200)
 def predict_featurecounts_memory(
-    file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
+    alignment_file_size_bytes: int = 0, format_output: bool = False
 ) -> dict:
     tool_name = "featurecounts-mem"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
+        "alignment": float(alignment_file_size_bytes),
+        "anno|reference_gene_sets": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
+        "extended_parameters|genome": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
+        "reference_gene_sets": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -602,18 +717,33 @@ def predict_featurecounts_memory(
 
 
 @api_router.get("/featurecounts/cpu/", status_code=200)
-def predict_featurecounts_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
+def predict_featurecounts_cpu(alignment_file_size_bytes: int = 0) -> dict:
 
-    result = predict_featurecounts_memory(file_size_bytes_1, file_size_bytes_2)
+    result = predict_featurecounts_memory(alignment_file_size_bytes)
 
     tool_name = "featurecounts-cpu"
     loaded_model = models[tool_name]
 
     params = {
-        "file_size_bytes_1.0": file_size_bytes_1,
-        "file_size_bytes_2.0": file_size_bytes_2,
+        "alignment": float(alignment_file_size_bytes),
+        "anno|reference_gene_sets": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
+        "extended_parameters|genome": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
+        "reference_gene_sets": float(
+            0
+        ),  # redundant input? Investigate why it is needed.
         "memory.max_usage_in_bytes": result["Required memory"],
     }
+
+    # The default value for input parameters is 0
+    # The model expects nan for 0 values
+    for key in params:
+        if params[key] == 0:
+            params[key] = np.nan
+
     print(f"params: {params}")
     df = pd.DataFrame(params, index=[0])
     print(f"df: {df}")
@@ -629,6 +759,7 @@ def predict_featurecounts_cpu(file_size_bytes_1: int, file_size_bytes_2: int) ->
 #############
 ## freebayes
 #############
+"""
 @api_router.get("/freebayes/memory/", status_code=200)
 def predict_freebayes_memory(
     file_size_bytes_1: int, file_size_bytes_2: int, format_output: bool = False
@@ -678,6 +809,7 @@ def predict_freebayes_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dic
     y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
+"""
 
 
 app.include_router(api_router)
