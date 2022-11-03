@@ -3,9 +3,13 @@ import json
 import pickle
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-from sklearn.metrics import r2_score
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    r2_score,
+)
 
 import train_resource_predictor as trp
 
@@ -35,15 +39,17 @@ def predict_with_loaded_model(input_file, label_name, model_file):
     X = df.drop(columns=[label_name], axis=1)
     y = df[label_name]
 
-    # normalize runtimes
-    y = np.log1p(y)
-
     y_predicted = loaded_model.predict(X)
-    prediction_score = r2_score(y.values, y_predicted)
+    y_actual = y.values
 
-    # Reverse the log1p transformation
-    y_predicted = np.expm1(y_predicted)
-    y_actual = np.expm1(y.values)
+    r2 = r2_score(y.values, y_predicted)
+    print(f"r2: {r2}")
+    rmse = mean_squared_error(y_actual, y_predicted, squared=False)
+    print(f"rmse: {rmse}")
+    mape = mean_absolute_percentage_error(y_actual, y_predicted)
+    print(f"mape: {mape}")
+    mae = mean_absolute_error(y_actual, y_predicted)
+    print(f"mae: {mae}")
 
     actual_vs_predicted_df = pd.DataFrame(
         {"Actual": y_actual, "Predicted": y_predicted}
@@ -51,12 +57,23 @@ def predict_with_loaded_model(input_file, label_name, model_file):
     actual_vs_predicted_df.to_csv("actual_vs_predicted.csv", sep=",")
     print(actual_vs_predicted_df.head())
     print(actual_vs_predicted_df.shape)
-    print(f"prediction_score: {prediction_score}")
 
     plt.scatter(y_actual, y_predicted)
     plt.xlabel("Actual")
     plt.ylabel("Predicted")
-    plt.text(21, 24, "R^2: " + str(prediction_score), fontsize=8)
+    plt.ylim(ymin=0)
+    plt.xlim(xmin=0)
+    plt.text(
+        21,
+        24,
+        "R^2: "
+        + "{:.2f}".format(r2)
+        + ", RMSE: "
+        + "{:.2f}".format(rmse)
+        + ", MAPE: "
+        + "{:.2f}".format(mape),
+        fontsize=8,
+    )
     plt.show()
 
 

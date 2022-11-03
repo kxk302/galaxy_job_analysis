@@ -8,17 +8,22 @@ import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import r2_score
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    r2_score,
+)
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 # Percentage of test data
 TEST_SIZE = 0.2
 # To make random split of training and testing data repeatable
 RANDOM_STATE = 13
 # Scoring function for regression
-SCORING = "r2"
+SCORING = "neg_mean_absolute_percentage_error"
 # Number folds in cross validation for grid search CV
 CROSS_VALIDATION_NUM_FOLD = 10
 # Log level for grid search CV
@@ -68,10 +73,14 @@ STATE_COL = "state"
 FEATURES_IMPORTANCE_CUTOFF = 0.9
 # GridSearchCV error_score
 ERROR_SCORE = "raise"
+# To include training scores
+RETURN_TRAIN_SCORE = True
 # Memory prediction label
 MEMORY_LABEL = "memory.max_usage_in_bytes"
 # CPU number + utilization label
 CPU_LABEL = "cpu.utilization"
+# galaxy_slots column
+GALAXY_SLOTS_COL = "galaxy_slots"
 
 
 def remove_bad_columns(df_in, label_name=None):
@@ -179,6 +188,15 @@ def cleanup_data(df_in, input_file, label_name):
 
     # Only keep rows that the label column (memory) is not null
     df = df[df[label_name].notnull()]
+
+    # If label_name is CPU_LABEL, remove rows with invalid CPU_LABEL values
+    # Assuming the maximum value for galaxy_slots is 10. If the CPU utilization
+    # is 99%, we would have 1099, by concatenating galaxy_slots and CPU utilization
+    # Any number greater than 1099 is invalid and rows containing them must be removed
+    if label_name == CPU_LABEL:
+        max_galaxy_slots = int(df[GALAXY_SLOTS_COL].max())
+        max_galaxy_slots_value = (max_galaxy_slots * 100) + 100
+        df = df[df[CPU_LABEL] < max_galaxy_slots_value]
 
     # Remove bad columns
     df = remove_bad_columns(df, label_name)
@@ -300,7 +318,10 @@ def get_categorical_numerical_features(df):
 # to process dataframe columns based on their type
 def get_preprocessor(categorical_features, numerical_features):
     numerical_pipeline = Pipeline(
-        steps=[("impute", SimpleImputer(strategy="median")), ("scale", MinMaxScaler())]
+        steps=[
+            ("impute", SimpleImputer(strategy="median")),
+            ("scale", StandardScaler()),
+        ]
     )
 
     categorical_pipeline = Pipeline(
@@ -380,6 +401,7 @@ def train_models(
             verbose=VERBOSE,
             n_jobs=NUM_JOBS,
             error_score=ERROR_SCORE,
+            return_train_score=RETURN_TRAIN_SCORE,
         )
 
         _ = grid_search_cv.fit(X_train, y_train)
@@ -411,8 +433,15 @@ def train_models(
 
         # Prediction score on test data
         y_predicted = grid_search_cv.predict(X_test)
-        test_score = r2_score(y_test, y_predicted)
-        print(f"prediction_score: {test_score}")
+
+        r2 = r2_score(y_test, y_predicted)
+        print(f"r2: {r2}")
+        rmse = mean_squared_error(y_test, y_predicted, squared=False)
+        print(f"rmse: {rmse}")
+        mape = mean_absolute_percentage_error(y_test, y_predicted)
+        print(f"mape: {mape}")
+        mae = mean_absolute_error(y_test, y_predicted)
+        print(f"mae: {mae}")
 
         # Write a row summarizing the training
         o_file.write(
@@ -424,7 +453,14 @@ def train_models(
                     str(grid_search_cv.scorer_),
                     str(grid_search_cv.best_score_),
                     best_params_str,
-                    str(test_score),
+                    ":".join(
+                        [
+                            "{:.2f}".format(r2),
+                            "{:.2f}".format(rmse),
+                            "{:.2f}".format(mape),
+                            "{:.2f}".format(mae),
+                        ]
+                    ),
                     str(len(grid_search_cv.feature_names_in_.tolist())),
                     ":".join(grid_search_cv.feature_names_in_.tolist()),
                     feature_importance,
@@ -461,12 +497,13 @@ def train_models(
 #   (nested loop) and performs grid search CV. The results (including test data prediction)
 #   is written to the output file. The file columns are the following:
 #
-#   input_file,regressor,label_name,best_score(r2),best_parameters,test_score(r2)
+#   input_file,regressor,label_name,best_score,best_parameters,test_score(r2,rmse,mape),num_features,feature_names,
+#   feature_importance,num_cols_after_translation,column_translation
 #
 # models_dir:
 #   Save model binaries to this directory
 #
-def predict(inputs_file, models_file, output_file, models_dir):
+def train(inputs_file, models_file, output_file, models_dir):
     print(f"inputs_file: {inputs_file}")
     df_in = pd.read_csv(inputs_file, comment="#")
     print(df_in.head())
@@ -479,7 +516,7 @@ def predict(inputs_file, models_file, output_file, models_dir):
     o_file = open(output_file, "w")
     o_file.write(
         "input_file,regressor,label_name,scorer_function,best_score,\
-                best_parameters,test_score,num_features,feature_names,\
+                best_parameters,test_scores(r2,rmse,mape,mae),num_features,feature_names,\
                 feature_importance,num_cols_after_translation,column_translation\n"
     )
 
@@ -502,9 +539,6 @@ def predict(inputs_file, models_file, output_file, models_dir):
 
         X = df.drop(columns=[label_name], axis=1)
         y = df[label_name]
-
-        # normalize runtimes
-        y = np.log1p(y)
 
         categorical_features, numerical_features = get_categorical_numerical_features(X)
 
@@ -557,4 +591,4 @@ if __name__ == "__main__":
     argument_parser.add_argument("--output_file", "-o", type=str, required=True)
     argument_parser.add_argument("--models_dir", "-d", type=str, required=True)
     args = argument_parser.parse_args()
-    predict(args.input_files, args.models_file, args.output_file, args.models_dir)
+    train(args.input_files, args.models_file, args.output_file, args.models_dir)
