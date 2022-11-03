@@ -15,7 +15,7 @@ models = {}
 @app.on_event("startup")
 async def startup_event():
     with open(
-        "../models/bowtie2/mem/mem_2.4.2+galaxy0_2.4.2+galaxy0.tsv_GradientBoostingRegressor",
+        "../models/bowtie2/mem/mem_2.4.2+galaxy0_2.4.2+galaxy0.tsv_BaggingRegressor",
         "rb",
     ) as fp:
         models["bowtie2-mem"] = pickle.load(fp)
@@ -25,17 +25,17 @@ async def startup_event():
     ) as fp:
         models["bowtie2-cpu"] = pickle.load(fp)
     with open(
-        "../models/bwa_mem/mem/mem_0.7.17.2_0.7.17.2.tsv_GradientBoostingRegressor",
+        "../models/bwa_mem/mem/mem_0.7.17.2_0.7.17.2.tsv_BaggingRegressor",
         "rb",
     ) as fp:
         models["bwa_mem-mem"] = pickle.load(fp)
     with open(
-        "../models/bwa_mem/cpu/cpu_0.7.17.2_0.7.17.2.tsv_GradientBoostingRegressor",
+        "../models/bwa_mem/cpu/cpu_0.7.17.2_0.7.17.2.tsv_BaggingRegressor",
         "rb",
     ) as fp:
         models["bwa_mem-cpu"] = pickle.load(fp)
     with open(
-        "../models/fastqc/mem/mem_0.73+galaxy0_0.73+galaxy0.tsv_GradientBoostingRegressor",
+        "../models/fastqc/mem/mem_0.73+galaxy0_0.73+galaxy0.tsv_BaggingRegressor",
         "rb",
     ) as fp:
         models["fastqc-mem"] = pickle.load(fp)
@@ -45,12 +45,12 @@ async def startup_event():
     ) as fp:
         models["fastqc-cpu"] = pickle.load(fp)
     with open(
-        "../models/minimap2/mem/mem_2.24+galaxy0_2.24+galaxy0.tsv_GradientBoostingRegressor",
+        "../models/minimap2/mem/mem_2.24+galaxy0_2.24+galaxy0.tsv_BaggingRegressor",
         "rb",
     ) as fp:
         models["minimap2-mem"] = pickle.load(fp)
     with open(
-        "../models/minimap2/cpu/cpu_2.24+galaxy0_2.24+galaxy0.tsv_RandomForestRegressor",
+        "../models/minimap2/cpu/cpu_2.24+galaxy0_2.24+galaxy0.tsv_BaggingRegressor",
         "rb",
     ) as fp:
         models["minimap2-cpu"] = pickle.load(fp)
