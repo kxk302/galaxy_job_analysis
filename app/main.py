@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from fastapi import APIRouter, FastAPI
 
-app = FastAPI(title="Galaxy Job Resource Prediction API", openapi_url="/openapi.json")
+app = FastAPI(title="Galaxy Tool Resource Prediction API", openapi_url="/openapi.json")
 api_router = APIRouter()
 
 models = {}
