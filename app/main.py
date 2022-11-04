@@ -174,8 +174,7 @@ def predict_bowtie2_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -227,8 +226,7 @@ def predict_bowtie2_cpu(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 
@@ -268,8 +266,7 @@ def predict_bwa_mem_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -318,8 +315,7 @@ def predict_bwa_mem_cpu(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 
@@ -357,8 +353,7 @@ def predict_fastqc_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -396,8 +391,7 @@ def predict_fastqc_cpu(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 
@@ -440,8 +434,7 @@ def predict_minimap2_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -489,8 +482,7 @@ def predict_minimap2_cpu(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 
@@ -516,8 +508,7 @@ def predict_hisat2_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -544,8 +535,7 @@ def predict_hisat2_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dict:
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 """
@@ -576,8 +566,7 @@ def predict_rna_star_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -609,8 +598,7 @@ def predict_rna_star_cpu(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 """
@@ -637,8 +625,7 @@ def predict_trimmomatic_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -665,8 +652,7 @@ def predict_trimmomatic_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> d
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 """
@@ -707,8 +693,7 @@ def predict_featurecounts_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -750,8 +735,7 @@ def predict_featurecounts_cpu(alignment_file_size_bytes: int = 0) -> dict:
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 
@@ -777,8 +761,7 @@ def predict_freebayes_memory(
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     if format_output:
         y_predicted_denormalized = to_kilo_mega_giga_bytes(y_predicted_denormalized)
@@ -805,8 +788,7 @@ def predict_freebayes_cpu(file_size_bytes_1: int, file_size_bytes_2: int) -> dic
 
     y_predicted = loaded_model.predict(df)
     # y_predicted is a numpy array. Call tolist() and get the first value from list
-    # Call numpy's expm1 to denormalize the value of memory (it was normalized via numpy's log1p)
-    y_predicted_denormalized = np.expm1(y_predicted.tolist()[0])
+    y_predicted_denormalized = y_predicted.tolist()[0]
 
     return {"Tool name": tool_name, "Required CPU": y_predicted_denormalized}
 """
